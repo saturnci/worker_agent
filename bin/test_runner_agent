@@ -16,4 +16,6 @@ test_runner_agent.send_ready_signal
 puts "Ready signal sent"
 
 puts "Listening for assignments..."
-test_runner_agent.listen_for_assignment
+assignment = test_runner_agent.listen_for_assignment
+
+puts "Received assignment for run #{assignment["run_id"]}"
