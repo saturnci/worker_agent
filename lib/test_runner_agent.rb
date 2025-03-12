@@ -38,6 +38,30 @@ class TestRunnerAgent
     end
   end
 
+  def execute(assignment)
+    require_relative "../script"
+
+    ENV["HOST"] = @credential.host
+    ENV["RUN_ID"] = assignment["run_id"]
+    ENV["RUN_ORDER_INDEX"] = assignment["run_order_index"]
+    ENV["PROJECT_NAME"] = assignment["project_name"]
+    ENV["BRANCH_NAME"] = assignment["branch_name"]
+    ENV["NUMBER_OF_CONCURRENT_RUNS"] = assignment["number_of_concurrent_runs"]
+    ENV["COMMIT_HASH"] = assignment["commit_hash"]
+    ENV["RSPEC_SEED"] = assignment["rspec_seed"]
+    ENV["GITHUB_INSTALLATION_ID"] = assignment["github_installation_id"]
+    ENV["GITHUB_REPO_FULL_NAME"] = assignment["github_repo_full_name"]
+
+    ENV["DOCKER_REGISTRY_CACHE_USERNAME"] = assignment["docker_registry_cache_username"]
+    ENV["DOCKER_REGISTRY_CACHE_PASSWORD"] = assignment["docker_registry_cache_password"]
+    ENV["SATURNCI_ENV_FILE_PATH"] = assignment["saturnci_env_file_path"] || ".saturnci/.env"
+    ENV["ARCH"] = assignment["arch"]
+    ENV["NODE_ARCH"] = assignment["node_arch"]
+    ENV["BUNDLE_GEMFILE"] = assignment["bundle_gemfile"]
+
+    execute_script
+  end
+
   private
 
   def send_event(type)

@@ -19,3 +19,4 @@ puts "Listening for assignments..."
 assignment = test_runner_agent.listen_for_assignment
 
 puts "Received assignment for run #{assignment["run_id"]}"
+test_runner_agent.execute(assignment)
