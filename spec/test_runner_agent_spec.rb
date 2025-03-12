@@ -19,15 +19,41 @@ describe TestRunnerAgent do
     TestRunnerAgent.new(test_runner_id:, credential:)
   end
 
-  before do
-    stub_request(:post, "https://app.saturnci.com/api/v1/test_runners/#{test_runner_id}/test_runner_events").
-      to_return(status: 200, body: "", headers: {})
-  end
-
   describe "#send_ready_signal" do
+    before do
+      stub_request(:post, "https://app.saturnci.com/api/v1/test_runners/#{test_runner_id}/test_runner_events").
+        to_return(status: 200, body: "", headers: {})
+    end
+
     it "works" do
       response = test_runner_agent.send_ready_signal
       expect(response.code).to eq("200")
+    end
+  end
+
+  describe "#listen_for_assignment" do
+    context "an assignment exists" do
+      before do
+        stub_request(:get, "https://app.saturnci.com/api/v1/test_runners/#{test_runner_id}/test_runner_assignments").
+          to_return(status: 200, body: [{ run_id: "abc123" }].to_json)
+      end
+
+      it "gets the assignment" do
+        assignment = test_runner_agent.listen_for_assignment
+        expect(assignment["run_id"]).to eq("abc123")
+      end
+    end
+
+    context "no assignment exists" do
+      before do
+        stub_request(:get, "https://app.saturnci.com/api/v1/test_runners/#{test_runner_id}/test_runner_assignments").
+          to_return(status: 200, body: [].to_json)
+      end
+
+      it "works" do
+        assignment = test_runner_agent.listen_for_assignment(interval_in_seconds: 0, check_limit: 2)
+        expect(assignment).to be_nil
+      end
     end
   end
 end
