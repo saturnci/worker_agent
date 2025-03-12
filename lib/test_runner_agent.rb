@@ -45,7 +45,7 @@ class TestRunnerAgent
       credential: @credential,
       endpoint: "test_runners/#{@test_runner_id}/test_runner_events",
       method: "POST",
-      body: { type: }
+      body: { type: type }
     )
 
     request.response
