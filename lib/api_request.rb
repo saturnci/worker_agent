@@ -1,5 +1,6 @@
 require "net/http"
 require "uri"
+require "json"
 
 class APIRequest
   def initialize(credential:, method:, endpoint:, body: {}, debug: false)
