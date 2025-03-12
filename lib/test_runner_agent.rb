@@ -7,14 +7,7 @@ class TestRunnerAgent
   end
 
   def send_ready_signal
-    request = APIRequest.new(
-      credential: @credential,
-      endpoint: "test_runners/#{@test_runner_id}/test_runner_events",
-      method: "POST",
-      body: { type: "ready_signal_received" }
-    )
-
-    request.response
+    send_event("ready_signal_received")
   end
 
   def listen_for_assignment(interval_in_seconds: 5, check_limit: nil)
@@ -32,6 +25,7 @@ class TestRunnerAgent
         assignments = JSON.parse(response.body)
 
         if assignments.any?
+          send_event("assignment_acknowledged")
           return assignments.first
         end
 
@@ -42,5 +36,18 @@ class TestRunnerAgent
         puts "Error checking for assignments: #{e.message}"
       end
     end
+  end
+
+  private
+
+  def send_event(type)
+    request = APIRequest.new(
+      credential: @credential,
+      endpoint: "test_runners/#{@test_runner_id}/test_runner_events",
+      method: "POST",
+      body: { type: }
+    )
+
+    request.response
   end
 end
