@@ -54,9 +54,8 @@ class TestRunnerAgent
     ENV["RSPEC_SEED"] = assignment["rspec_seed"].to_s
     ENV["GITHUB_INSTALLATION_ID"] = assignment["github_installation_id"]
     ENV["GITHUB_REPO_FULL_NAME"] = assignment["github_repo_full_name"]
-    ENV["PROJECT_DIR"] = "~/project"
 
-    env_file_path = File.join(ENV["PROJECT_DIR"], ".saturnci/.env")
+    env_file_path = File.join("~", ".env")
     File.open(env_file_path, 'w') do |file|
       assignment["env_vars"].each do |key, value|
         ENV[key] = value
