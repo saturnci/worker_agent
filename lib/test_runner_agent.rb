@@ -42,6 +42,9 @@ class TestRunnerAgent
     require_relative "./script"
 
     ENV["HOST"] = @credential.host
+    ENV["USER_ID"] = @credential.user_id
+    ENV["USER_API_TOKEN"] = @credential.api_token
+
     ENV["RUN_ID"] = assignment["run_id"]
     ENV["RUN_ORDER_INDEX"] = assignment["run_order_index"].to_s
     ENV["PROJECT_NAME"] = assignment["project_name"]
