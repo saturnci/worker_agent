@@ -43,12 +43,12 @@ class TestRunnerAgent
 
     ENV["HOST"] = @credential.host
     ENV["RUN_ID"] = assignment["run_id"]
-    ENV["RUN_ORDER_INDEX"] = assignment["run_order_index"]
+    ENV["RUN_ORDER_INDEX"] = assignment["run_order_index"].to_s
     ENV["PROJECT_NAME"] = assignment["project_name"]
     ENV["BRANCH_NAME"] = assignment["branch_name"]
-    ENV["NUMBER_OF_CONCURRENT_RUNS"] = assignment["number_of_concurrent_runs"]
+    ENV["NUMBER_OF_CONCURRENT_RUNS"] = assignment["number_of_concurrent_runs"].to_s
     ENV["COMMIT_HASH"] = assignment["commit_hash"]
-    ENV["RSPEC_SEED"] = assignment["rspec_seed"]
+    ENV["RSPEC_SEED"] = assignment["rspec_seed"].to_s
     ENV["GITHUB_INSTALLATION_ID"] = assignment["github_installation_id"]
     ENV["GITHUB_REPO_FULL_NAME"] = assignment["github_repo_full_name"]
 
