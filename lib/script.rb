@@ -10,7 +10,7 @@ require_relative "./docker_registry_cache"
 require_relative "./test_suite_command"
 require_relative "./screenshot_tar_file"
 
-PROJECT_DIR = "/home/ubuntu/project"
+PROJECT_DIR = "~/project"
 RSPEC_DOCUMENTATION_OUTPUT_FILENAME = "tmp/rspec_documentation_output.txt"
 TEST_RESULTS_FILENAME = "tmp/test_results.txt"
 
@@ -173,8 +173,12 @@ end
 def clone_repo(client:, source:, destination:)
   require "open3"
   puts "Cloning #{source} into #{destination}..."
+  puts "GitHub installation ID: #{ENV["GITHUB_INSTALLATION_ID"]}"
   token = client.post("github_tokens", github_installation_id: ENV["GITHUB_INSTALLATION_ID"]).body
-  _, stderr, status = Open3.capture3("git clone --recurse-submodules https://x-access-token:#{token}@github.com/#{source} #{destination}")
+  puts "GitHub token: #{token}"
+  clone_command = "git clone --recurse-submodules https://x-access-token:#{token}@github.com/#{source} #{destination}"
+  puts clone_command
+  _, stderr, status = Open3.capture3(clone_command)
   puts status.success? ? "clone successful" : "clone failed: #{stderr}"
 end
 
