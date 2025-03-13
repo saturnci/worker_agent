@@ -10,7 +10,7 @@ require_relative "./docker_registry_cache"
 require_relative "./test_suite_command"
 require_relative "./screenshot_tar_file"
 
-PROJECT_DIR = "~/project"
+PROJECT_DIR = "/project"
 RSPEC_DOCUMENTATION_OUTPUT_FILENAME = "tmp/rspec_documentation_output.txt"
 TEST_RESULTS_FILENAME = "tmp/test_results.txt"
 
@@ -29,6 +29,7 @@ def execute_script
   puts "Runner ready"
   client.post("runs/#{ENV["RUN_ID"]}/run_events", type: "runner_ready")
 
+  FileUtils.rm_rf(PROJECT_DIR) if Dir.exist?(PROJECT_DIR)
   clone_repo(client: client, source: ENV["GITHUB_REPO_FULL_NAME"], destination: PROJECT_DIR)
 
   FileUtils.mkdir_p(PROJECT_DIR)
@@ -50,6 +51,7 @@ def execute_script
   puts "Registry cache image URL: #{docker_registry_cache.image_url}"
   saturnci_env_file_path = File.join(PROJECT_DIR, ".saturnci/.env")
   FileUtils.mv(ENV["SOURCE_ENV_FILE_PATH"], saturnci_env_file_path)
+  system("echo 'export SATURN_TEST_APP_IMAGE_URL=#{docker_registry_cache.image_url}' >> #{saturnci_env_file_path}")
   system("export $(cat #{saturnci_env_file_path} | xargs)")
 
   puts "Environment variables set in this shell:"
@@ -163,11 +165,11 @@ ensure
   puts response.body
   puts
 
-  #puts "Deleting runner"
+  puts "Deleting runner"
   puts "Done"
   sleep(5)
   system_log_stream.kill
-  #client.delete("runs/#{ENV["RUN_ID"]}/runner")
+  client.delete("runs/#{ENV["RUN_ID"]}/runner")
 end
 
 def clone_repo(client:, source:, destination:)
