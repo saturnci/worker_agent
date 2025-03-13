@@ -31,6 +31,7 @@ def execute_script
 
   clone_repo(client: client, source: ENV["GITHUB_REPO_FULL_NAME"], destination: PROJECT_DIR)
 
+  FileUtils.mkdir_p(PROJECT_DIR)
   Dir.chdir(PROJECT_DIR)
   FileUtils.mkdir_p("tmp")
 
@@ -48,7 +49,7 @@ def execute_script
 
   puts "Registry cache image URL: #{docker_registry_cache.image_url}"
   saturnci_env_file_path = File.join(PROJECT_DIR, ".saturnci/.env")
-  FileUtils.mv("~/.env", saturnci_env_file_path)
+  FileUtils.mv(ENV["SOURCE_ENV_FILE_PATH"], saturnci_env_file_path)
   system("export $(cat #{saturnci_env_file_path} | xargs)")
 
   puts "Environment variables set in this shell:"
@@ -162,10 +163,11 @@ ensure
   puts response.body
   puts
 
-  puts "Deleting runner"
+  #puts "Deleting runner"
+  puts "Done"
   sleep(5)
   system_log_stream.kill
-  client.delete("runs/#{ENV["RUN_ID"]}/runner")
+  #client.delete("runs/#{ENV["RUN_ID"]}/runner")
 end
 
 def clone_repo(client:, source:, destination:)

@@ -55,12 +55,19 @@ class TestRunnerAgent
     ENV["GITHUB_INSTALLATION_ID"] = assignment["github_installation_id"]
     ENV["GITHUB_REPO_FULL_NAME"] = assignment["github_repo_full_name"]
 
-    env_file_path = File.join("~", ".env")
-    File.open(env_file_path, 'w') do |file|
+    ENV["SOURCE_ENV_FILE_PATH"] = File.join(Dir.home, ".env")
+    puts "Writing env vars to #{env_file_path}"
+    File.open(ENV["SOURCE_ENV_FILE_PATH"], 'w') do |file|
       assignment["env_vars"].each do |key, value|
         ENV[key] = value
         file.puts "#{key}=#{value}"
       end
+    end
+
+    if File.exist?(ENV["SOURCE_ENV_FILE_PATH"])
+      puts "Successfully wrote env vars to #{ENV["SOURCE_ENV_FILE_PATH"]}"
+    else
+      puts "Failed: File #{ENV["SOURCE_ENV_FILE_PATH"]} does not exist"
     end
 
     execute_script
