@@ -55,13 +55,6 @@ class TestRunnerAgent
     ENV["GITHUB_INSTALLATION_ID"] = assignment["github_installation_id"]
     ENV["GITHUB_REPO_FULL_NAME"] = assignment["github_repo_full_name"]
 
-    ENV["DOCKER_REGISTRY_CACHE_USERNAME"] = assignment["docker_registry_cache_username"]
-    ENV["DOCKER_REGISTRY_CACHE_PASSWORD"] = assignment["docker_registry_cache_password"]
-    ENV["SATURNCI_ENV_FILE_PATH"] = assignment["saturnci_env_file_path"] || ".saturnci/.env"
-    ENV["ARCH"] = assignment["arch"]
-    ENV["NODE_ARCH"] = assignment["node_arch"]
-    ENV["BUNDLE_GEMFILE"] = assignment["bundle_gemfile"]
-
     execute_script
   end
 
