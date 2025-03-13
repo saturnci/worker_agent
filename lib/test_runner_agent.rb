@@ -56,7 +56,7 @@ class TestRunnerAgent
     ENV["GITHUB_REPO_FULL_NAME"] = assignment["github_repo_full_name"]
 
     ENV["SOURCE_ENV_FILE_PATH"] = "/tmp/.env"
-    puts "Writing env vars to #{env_file_path}"
+    puts "Writing env vars to #{ENV["SOURCE_ENV_FILE_PATH"]}"
     File.open(ENV["SOURCE_ENV_FILE_PATH"], 'w') do |file|
       assignment["env_vars"].each do |key, value|
         ENV[key] = value
