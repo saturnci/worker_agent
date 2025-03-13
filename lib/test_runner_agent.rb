@@ -39,7 +39,7 @@ class TestRunnerAgent
   end
 
   def execute(assignment)
-    require_relative "../script"
+    require_relative "./script"
 
     ENV["HOST"] = @credential.host
     ENV["RUN_ID"] = assignment["run_id"]

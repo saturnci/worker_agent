@@ -36,6 +36,8 @@ describe TestRunnerAgent do
       before do
         stub_request(:get, "https://app.saturnci.com/api/v1/test_runners/#{test_runner_id}/test_runner_assignments").
           to_return(status: 200, body: [{ run_id: "abc123" }].to_json)
+
+        stub_request(:post, "https://app.saturnci.com/api/v1/test_runners/#{test_runner_id}/test_runner_events")
       end
 
       it "gets the assignment" do
