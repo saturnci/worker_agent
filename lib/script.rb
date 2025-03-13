@@ -10,7 +10,6 @@ require_relative "./docker_registry_cache"
 require_relative "./test_suite_command"
 require_relative "./screenshot_tar_file"
 
-PROJECT_DIR = "~/project"
 RSPEC_DOCUMENTATION_OUTPUT_FILENAME = "tmp/rspec_documentation_output.txt"
 TEST_RESULTS_FILENAME = "tmp/test_results.txt"
 
@@ -29,9 +28,9 @@ def execute_script
   puts "Runner ready"
   client.post("runs/#{ENV["RUN_ID"]}/run_events", type: "runner_ready")
 
-  clone_repo(client: client, source: ENV["GITHUB_REPO_FULL_NAME"], destination: PROJECT_DIR)
+  clone_repo(client: client, source: ENV["GITHUB_REPO_FULL_NAME"], destination: ENV["PROJECT_DIR"])
 
-  Dir.chdir(PROJECT_DIR)
+  Dir.chdir(ENV["PROJECT_DIR"])
   FileUtils.mkdir_p("tmp")
 
   client.post("runs/#{ENV["RUN_ID"]}/run_events", type: "repository_cloned")
@@ -47,11 +46,7 @@ def execute_script
   )
 
   puts "Registry cache image URL: #{docker_registry_cache.image_url}"
-  system("echo 'export SATURN_TEST_APP_IMAGE_URL=#{docker_registry_cache.image_url}' >> #{ENV["SATURNCI_ENV_FILE_PATH"]}")
-  system("echo 'export DOCKER_BUILDKIT=1' >> #{ENV["SATURNCI_ENV_FILE_PATH"]}")
-  system("source #{ENV["SATURNCI_ENV_FILE_PATH"]}")
-  system("cp #{ENV["SATURNCI_ENV_FILE_PATH"]} #{PROJECT_DIR}/.saturnci/.env")
-  system("export $(cat #{PROJECT_DIR}/.saturnci/.env | xargs)")
+  system("export $(cat #{ENV["PROJECT_DIR"]}/.saturnci/.env | xargs)")
 
   puts "Environment variables set in this shell:"
   system("env | awk -F= '{print $1}' | sort")
