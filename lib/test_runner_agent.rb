@@ -22,6 +22,12 @@ class TestRunnerAgent
     loop do
       begin
         response = request.response
+
+        if response.code != "200"
+          send_event("error")
+          return
+        end
+
         assignments = JSON.parse(response.body)
 
         if assignments.any?

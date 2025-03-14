@@ -57,5 +57,17 @@ describe TestRunnerAgent do
         expect(assignment).to be_nil
       end
     end
+
+    context "error response" do
+      before do
+        stub_request(:get, "https://app.saturnci.com/api/v1/test_runners/#{test_runner_id}/test_runner_assignments").
+          to_return(status: 500, body: "Internal Server Error", headers: {})
+      end
+
+      it "sends an error event" do
+        expect(test_runner_agent).to receive(:send_event).with("error")
+        test_runner_agent.listen_for_assignment
+      end
+    end
   end
 end
