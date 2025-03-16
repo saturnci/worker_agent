@@ -1,14 +1,12 @@
 require "net/http"
-require "uri"
-require "json"
 
 module SaturnCIRunnerAPI
   class Request
-    def initialize(host, method, endpoint, body = nil)
+    def initialize(host, method, endpoint, payload = nil)
       @host = host
       @method = method
       @endpoint = endpoint
-      @body = body
+      @payload = payload
     end
 
     def execute
@@ -27,7 +25,7 @@ module SaturnCIRunnerAPI
 
       r.basic_auth(ENV["USER_ID"], ENV["USER_API_TOKEN"])
       r["Content-Type"] = "application/json"
-      r.body = @body.to_json if @body
+      r.body = @payload.to_json if @payload
       r
     end
 

@@ -14,7 +14,7 @@ class TestRunnerAgent
     request = APIRequest.new(
       credential: @credential,
       endpoint: "test_runners/#{@test_runner_id}/test_runner_assignments",
-      method: :get
+      method: "GET"
     )
 
     check_count = 0
@@ -85,7 +85,7 @@ class TestRunnerAgent
     request = APIRequest.new(
       credential: @credential,
       endpoint: "test_runners/#{@test_runner_id}/test_runner_events",
-      method: :post,
+      method: "POST",
       body: { type: type }
     )
 
