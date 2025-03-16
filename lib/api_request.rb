@@ -9,21 +9,21 @@ class APIRequest
     @endpoint = endpoint
     @body = body
     @debug = debug
+
+    @uri = URI("#{@credential.host}/api/v1/#{@endpoint}")
   end
 
   def response
     if @debug
       puts "Request details:"
-      puts uri.scheme
-      puts uri.hostname
-      puts uri.path
-      puts uri.port
+      puts @uri.scheme
+      puts @uri.hostname
+      puts @uri.path
+      puts @uri.port
       puts
     end
 
-    Net::HTTP.start(uri.hostname, uri.port, use_ssl: use_ssl?) do |http|
-      http.request(request)
-    end.tap do |response|
+    http.request(request).tap do |response|
       if @debug
         puts "Response:"
         puts "#{response.code} #{response.message}"
@@ -32,14 +32,18 @@ class APIRequest
     end
   end
 
+  def http
+    Net::HTTP.start(@uri.hostname, @uri.port, use_ssl: use_ssl?)
+  end
+
   def use_ssl?
-    uri.scheme == "https"
+    @uri.scheme == "https"
   end
 
   private
 
   def request
-    method.new(uri).tap do |request|
+    method.new(@uri).tap do |request|
       request.basic_auth @credential.user_id, @credential.api_token
       request.content_type = "application/json"
       request.body = @body.to_json
@@ -48,18 +52,14 @@ class APIRequest
 
   def method
     case @method
-    when "GET"
+    when :get
       Net::HTTP::Get
-    when "PATCH"
+    when :patch
       Net::HTTP::Patch
-    when "POST"
+    when :post
       Net::HTTP::Post
     else
       raise "Unknown method: #{@method}"
     end
-  end
-
-  def uri
-    URI("#{@credential.host}/api/v1/#{@endpoint}")
   end
 end
