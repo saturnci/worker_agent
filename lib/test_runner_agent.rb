@@ -21,19 +21,28 @@ class TestRunnerAgent
 
     loop do
       begin
+        puts "Checking for assignments..."
         response = request.response
+        puts "Response received"
 
         if response.code != "200"
+          puts "Error"
           send_event("error")
           return
         end
 
         assignments = JSON.parse(response.body)
+        puts "Assignments received: #{assignments.inspect}"
 
         if assignments.any?
+          puts "Found assignments"
           send_event("assignment_acknowledged")
           return assignments.first
+        else
+          puts "No assignments"
         end
+
+        puts "Waiting..."
 
         sleep interval_in_seconds
         check_count += 1
