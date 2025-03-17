@@ -27,6 +27,7 @@ class TestRunnerAgent
 
         if response.code != "200"
           puts "Error"
+          puts "Response body: #{response.body}"
           send_event("error")
           return
         end
