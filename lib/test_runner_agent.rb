@@ -92,6 +92,7 @@ class TestRunnerAgent
   private
 
   def send_event(type)
+    puts "Sending event of type #{type}"
     request = APIRequest.new(
       credential: @credential,
       endpoint: "test_runners/#{@test_runner_id}/test_runner_events",
@@ -99,6 +100,9 @@ class TestRunnerAgent
       body: { type: type }
     )
 
-    request.response
+    request.response.tap do |response|
+      puts "Event response code: #{response.code}"
+      puts "Event response body: #{response.body}"
+    end
   end
 end
