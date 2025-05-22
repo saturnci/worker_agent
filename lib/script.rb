@@ -96,6 +96,9 @@ def execute_script
   client.post("runs/#{ENV["RUN_ID"]}/run_events", type: "pre_script_started")
   system("sudo chmod 755 .saturnci/pre.sh")
 
+  puts "Environment variables set in this shell:"
+  system("env | awk -F= '{print $1}' | sort")
+
   pre_script_command = "docker compose -f .saturnci/docker-compose.yml run saturn_test_app ./.saturnci/pre.sh"
   puts "pre.sh command: \"#{pre_script_command}\""
   system(pre_script_command)
