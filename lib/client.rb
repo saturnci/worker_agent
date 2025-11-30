@@ -6,6 +6,10 @@ module SaturnCIRunnerAPI
       @host = host
     end
 
+    def get(endpoint)
+      Request.new(@host, :get, endpoint).execute
+    end
+
     def post(endpoint, payload = nil)
       Request.new(@host, :post, endpoint, payload).execute
     end

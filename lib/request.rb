@@ -49,6 +49,8 @@ module SaturnCIRunnerAPI
 
     def request
       case @method
+      when :get
+        r = Net::HTTP::Get.new(url)
       when :post
         r = Net::HTTP::Post.new(url)
       when :delete
