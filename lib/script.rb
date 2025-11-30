@@ -20,7 +20,7 @@ def wait_for_dns_resolution
   loop do
     begin
       # Test the same resolution path that Net::HTTP uses
-      host = ENV["HOST"].gsub(/^https?:\/\//, '')
+      host = ENV["SATURNCI_API_HOST"].gsub(/^https?:\/\//, '')
       http = Net::HTTP.new(host, 443)
       http.use_ssl = true
       http.open_timeout = 5
@@ -38,7 +38,7 @@ end
 def execute_script
   $stdout.sync = true
 
-  client = SaturnCIWorkerAPI::Client.new(ENV["HOST"])
+  client = SaturnCIWorkerAPI::Client.new(ENV["SATURNCI_API_HOST"])
 
   puts "Starting to stream system logs"
   system_log_stream = SaturnCIWorkerAPI::Stream.new(
@@ -198,7 +198,7 @@ def execute_script
 
   puts "Sending JSON output"
   test_output_request = SaturnCIWorkerAPI::FileContentRequest.new(
-    host: ENV["HOST"],
+    host: ENV["SATURNCI_API_HOST"],
     api_path: "runs/#{ENV["RUN_ID"]}/json_output",
     content_type: "application/json",
     file_path: "tmp/json_output.json"
@@ -248,7 +248,7 @@ def send_screenshot_tar_file(source_dir:)
   puts "Screenshots tarred at: #{screenshot_tar_file.path}"
 
   screenshot_upload_request = SaturnCIWorkerAPI::FileContentRequest.new(
-    host: ENV["HOST"],
+    host: ENV["SATURNCI_API_HOST"],
     api_path: "runs/#{ENV["RUN_ID"]}/screenshots",
     content_type: "application/tar",
     file_path: screenshot_tar_file.path

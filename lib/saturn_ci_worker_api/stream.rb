@@ -43,7 +43,7 @@ module SaturnCIWorkerAPI
 
     def send_content(newest_content)
       SaturnCIWorkerAPI::ContentRequest.new(
-        host: ENV["HOST"],
+        host: ENV["SATURNCI_API_HOST"],
         api_path: @api_path,
         content_type: "text/plain",
         content: Base64.encode64(newest_content + "\n")
