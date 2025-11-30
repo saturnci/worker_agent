@@ -1,11 +1,9 @@
-require_relative "./saturn_ci_worker_api/client"
-
 class WorkerAgent
   CONSECUTIVE_ERROR_THRESHOLD = 5
 
-  def initialize(test_runner_id:, host:)
+  def initialize(test_runner_id:, client:)
     @test_runner_id = test_runner_id
-    @client = SaturnCIWorkerAPI::Client.new(host)
+    @client = client
   end
 
   def send_ready_signal

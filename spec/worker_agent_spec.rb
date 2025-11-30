@@ -1,4 +1,5 @@
 require_relative "../lib/worker_agent"
+require_relative "../lib/saturn_ci_worker_api/client"
 
 require "webmock/rspec"
 WebMock.disable_net_connect!(allow_localhost: true)
@@ -6,9 +7,10 @@ WebMock.disable_net_connect!(allow_localhost: true)
 describe WorkerAgent do
   let!(:test_runner_id) { "674f498b-0669-4581-a0cf-1be4f2cf5a98" }
   let!(:host) { "https://app.saturnci.com" }
+  let!(:client) { SaturnCIWorkerAPI::Client.new(host) }
 
   let!(:worker_agent) do
-    WorkerAgent.new(test_runner_id:, host:)
+    WorkerAgent.new(test_runner_id:, client:)
   end
 
   before do

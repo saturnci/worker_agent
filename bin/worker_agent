@@ -1,11 +1,14 @@
 #!/usr/bin/env ruby
 
 require_relative "../lib/worker_agent"
+require_relative "../lib/saturn_ci_worker_api/client"
 require_relative "../lib/current_version"
+
+client = SaturnCIWorkerAPI::Client.new(ENV["SATURNCI_API_HOST"])
 
 worker_agent = WorkerAgent.new(
   test_runner_id: ENV["TEST_RUNNER_ID"],
-  host: ENV["SATURNCI_API_HOST"]
+  client: client
 )
 
 worker_agent.send_ready_signal
