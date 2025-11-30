@@ -1,10 +1,10 @@
-require_relative "../lib/test_runner_agent"
+require_relative "../lib/worker_agent"
 require_relative "../lib/credential"
 
 require "webmock/rspec"
 WebMock.disable_net_connect!(allow_localhost: true)
 
-describe TestRunnerAgent do
+describe WorkerAgent do
   let!(:test_runner_id) { "674f498b-0669-4581-a0cf-1be4f2cf5a98" }
 
   let!(:credential) do
@@ -15,8 +15,8 @@ describe TestRunnerAgent do
     )
   end
 
-  let!(:test_runner_agent) do
-    TestRunnerAgent.new(test_runner_id:, credential:)
+  let!(:worker_agent) do
+    WorkerAgent.new(test_runner_id:, credential:)
   end
 
   describe "#send_ready_signal" do
@@ -26,7 +26,7 @@ describe TestRunnerAgent do
     end
 
     it "works" do
-      response = test_runner_agent.send_ready_signal
+      response = worker_agent.send_ready_signal
       expect(response.code).to eq("200")
     end
   end
@@ -41,7 +41,7 @@ describe TestRunnerAgent do
       end
 
       it "gets the assignment" do
-        assignment = test_runner_agent.listen_for_assignment
+        assignment = worker_agent.listen_for_assignment
         expect(assignment["run_id"]).to eq("abc123")
       end
     end
@@ -53,7 +53,7 @@ describe TestRunnerAgent do
       end
 
       it "works" do
-        assignment = test_runner_agent.listen_for_assignment(interval_in_seconds: 0, check_limit: 2)
+        assignment = worker_agent.listen_for_assignment(interval_in_seconds: 0, check_limit: 2)
         expect(assignment).to be_nil
       end
     end
@@ -65,8 +65,8 @@ describe TestRunnerAgent do
       end
 
       it "sends an error event" do
-        expect(test_runner_agent).to receive(:send_event).with("error")
-        test_runner_agent.listen_for_assignment
+        expect(worker_agent).to receive(:send_event).with("error")
+        worker_agent.listen_for_assignment
       end
     end
 
@@ -77,8 +77,8 @@ describe TestRunnerAgent do
       end
 
       it "sends an error event" do
-        expect(test_runner_agent).to receive(:send_event).with("error")
-        test_runner_agent.listen_for_assignment(interval_in_seconds: 0)
+        expect(worker_agent).to receive(:send_event).with("error")
+        worker_agent.listen_for_assignment(interval_in_seconds: 0)
       end
     end
 
@@ -92,8 +92,8 @@ describe TestRunnerAgent do
       end
 
       it "does not send an error event" do
-        expect(test_runner_agent).not_to receive(:send_event).with("error")
-        test_runner_agent.listen_for_assignment(interval_in_seconds: 0)
+        expect(worker_agent).not_to receive(:send_event).with("error")
+        worker_agent.listen_for_assignment(interval_in_seconds: 0)
       end
     end
   end

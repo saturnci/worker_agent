@@ -1,6 +1,6 @@
 require_relative "./api_request"
 
-class TestRunnerAgent
+class WorkerAgent
   CONSECUTIVE_ERROR_THRESHOLD = 5
 
   def initialize(test_runner_id:, credential:)
