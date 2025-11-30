@@ -1,7 +1,7 @@
 require "net/http"
 require "uri"
 require "json"
-require_relative "api_config"
+require_relative "saturn_ci_worker_api/api_config"
 
 class APIRequest
   include APIConfig

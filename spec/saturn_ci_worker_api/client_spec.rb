@@ -1,4 +1,4 @@
-require_relative "../../lib/client"
+require_relative "../../lib/saturn_ci_worker_api/client"
 
 require "webmock/rspec"
 WebMock.disable_net_connect!(allow_localhost: true)

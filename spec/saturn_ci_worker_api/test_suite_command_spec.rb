@@ -1,4 +1,4 @@
-require_relative "../lib/test_suite_command"
+require_relative "../../lib/saturn_ci_worker_api/test_suite_command"
 
 describe SaturnCIWorkerAPI::TestSuiteCommand do
   describe "to_s" do

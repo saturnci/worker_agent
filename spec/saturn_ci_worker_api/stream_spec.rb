@@ -1,4 +1,4 @@
-require_relative "../lib/stream"
+require_relative "../../lib/saturn_ci_worker_api/stream"
 
 describe SaturnCIWorkerAPI::Stream do
   let!(:stream) do
