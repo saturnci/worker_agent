@@ -1,11 +1,11 @@
-require_relative "./api_request"
+require_relative "./saturn_ci_worker_api/client"
 
 class WorkerAgent
   CONSECUTIVE_ERROR_THRESHOLD = 5
 
-  def initialize(test_runner_id:, credential:)
+  def initialize(test_runner_id:, host:)
     @test_runner_id = test_runner_id
-    @credential = credential
+    @client = SaturnCIWorkerAPI::Client.new(host)
   end
 
   def send_ready_signal
@@ -13,18 +13,12 @@ class WorkerAgent
   end
 
   def listen_for_assignment(interval_in_seconds: 5, check_limit: nil)
-    request = APIRequest.new(
-      credential: @credential,
-      endpoint: "test_runners/#{@test_runner_id}/test_runner_assignments",
-      method: :get
-    )
-
     check_count = 0
     consecutive_error_count = 0
 
     loop do
       begin
-        response = request.response
+        response = @client.get("test_runners/#{@test_runner_id}/test_runner_assignments")
 
         if response.code != "200"
           puts "Error checking for assignments: #{response.body}"
@@ -93,14 +87,6 @@ class WorkerAgent
 
   def send_event(type)
     puts "Sending event: #{type}"
-
-    request = APIRequest.new(
-      credential: @credential,
-      endpoint: "test_runners/#{@test_runner_id}/test_runner_events",
-      method: :post,
-      body: { type: type }
-    )
-
-    request.response
+    @client.post("test_runners/#{@test_runner_id}/test_runner_events", type: type)
   end
 end
