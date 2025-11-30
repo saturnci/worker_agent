@@ -1,22 +1,22 @@
 require_relative "../lib/worker_agent"
-require_relative "../lib/credential"
+require_relative "../lib/saturn_ci_worker_api/client"
 
 require "webmock/rspec"
 WebMock.disable_net_connect!(allow_localhost: true)
 
 describe WorkerAgent do
   let!(:test_runner_id) { "674f498b-0669-4581-a0cf-1be4f2cf5a98" }
-
-  let!(:credential) do
-    Credential.new(
-      host: "https://app.saturnci.com",
-      user_id: "test_user_id",
-      api_token: "test_api_token"
-    )
-  end
+  let!(:host) { "https://app.saturnci.com" }
+  let!(:client) { SaturnCIWorkerAPI::Client.new(host) }
 
   let!(:worker_agent) do
-    WorkerAgent.new(test_runner_id:, credential:)
+    WorkerAgent.new(test_runner_id:, client:)
+  end
+
+  before do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("TEST_RUNNER_ID").and_return(test_runner_id)
+    allow(ENV).to receive(:[]).with("TEST_RUNNER_ACCESS_TOKEN").and_return("test_api_token")
   end
 
   describe "#send_ready_signal" do
