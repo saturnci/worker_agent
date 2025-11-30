@@ -1,4 +1,4 @@
-module SaturnCIRunnerAPI
+module SaturnCIWorkerAPI
   class TestSuiteCommand
     TEST_FILE_GLOB = "./spec/**/*_spec.rb"
 

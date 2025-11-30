@@ -1,8 +1,8 @@
 require_relative "../lib/stream"
 
-describe SaturnCIRunnerAPI::Stream do
+describe SaturnCIWorkerAPI::Stream do
   let!(:stream) do
-    SaturnCIRunnerAPI::Stream.new(
+    SaturnCIWorkerAPI::Stream.new(
       "/foo/bar/log",
       "runs/123/system_logs",
       wait_interval: 0

@@ -2,7 +2,7 @@ require "net/http"
 require "uri"
 require_relative "api_config"
 
-module SaturnCIRunnerAPI
+module SaturnCIWorkerAPI
   class FileContentRequest
     include APIConfig
     def initialize(host:, api_path:, content_type:, file_path:)

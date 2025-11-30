@@ -1,6 +1,6 @@
 require_relative "api_config"
 
-module SaturnCIRunnerAPI
+module SaturnCIWorkerAPI
   class ContentRequest
     include APIConfig
     def initialize(host:, api_path:, content_type:, content:)

@@ -1,6 +1,6 @@
 require "digest"
 
-module SaturnCIRunnerAPI
+module SaturnCIWorkerAPI
   class DockerRegistryCache
     URL = "registrycache.saturnci.com:5000"
 

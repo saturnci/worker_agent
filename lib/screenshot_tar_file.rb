@@ -1,4 +1,4 @@
-class SaturnCIRunnerAPI::ScreenshotTarFile
+class SaturnCIWorkerAPI::ScreenshotTarFile
   def initialize(source_dir:)
     @source_dir = source_dir
     system("tar -czf #{path} -C #{@source_dir} .")

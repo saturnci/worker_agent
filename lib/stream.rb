@@ -1,7 +1,7 @@
 require "base64"
 require_relative "./content_request"
 
-module SaturnCIRunnerAPI
+module SaturnCIWorkerAPI
   WAIT_INTERVAL_IN_SECONDS = 5
 
   class Stream
@@ -42,7 +42,7 @@ module SaturnCIRunnerAPI
     end
 
     def send_content(newest_content)
-      SaturnCIRunnerAPI::ContentRequest.new(
+      SaturnCIWorkerAPI::ContentRequest.new(
         host: ENV["HOST"],
         api_path: @api_path,
         content_type: "text/plain",

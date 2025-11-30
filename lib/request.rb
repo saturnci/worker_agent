@@ -3,7 +3,7 @@ require "uri"
 require "json"
 require_relative "api_config"
 
-module SaturnCIRunnerAPI
+module SaturnCIWorkerAPI
   class Request
     include APIConfig
     def initialize(host, method, endpoint, body = nil)

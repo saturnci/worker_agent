@@ -3,9 +3,9 @@ require_relative "../../lib/client"
 require "webmock/rspec"
 WebMock.disable_net_connect!(allow_localhost: true)
 
-describe SaturnCIRunnerAPI::Client do
+describe SaturnCIWorkerAPI::Client do
   let(:host) { "https://app.saturnci.com" }
-  let(:client) { SaturnCIRunnerAPI::Client.new(host) }
+  let(:client) { SaturnCIWorkerAPI::Client.new(host) }
 
   before do
     ENV["TEST_RUNNER_ID"] = "test_runner_id"

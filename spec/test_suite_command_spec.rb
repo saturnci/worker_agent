@@ -1,9 +1,9 @@
 require_relative "../lib/test_suite_command"
 
-describe SaturnCIRunnerAPI::TestSuiteCommand do
+describe SaturnCIWorkerAPI::TestSuiteCommand do
   describe "to_s" do
     let!(:command) do
-      SaturnCIRunnerAPI::TestSuiteCommand.new(
+      SaturnCIWorkerAPI::TestSuiteCommand.new(
         docker_registry_cache_image_url: "registrycache.saturnci.com:5000/saturn_test_app:123456",
         number_of_concurrent_runs: "1",
         run_order_index: "1",
@@ -26,7 +26,7 @@ describe SaturnCIRunnerAPI::TestSuiteCommand do
 
   describe "docker_compose_command" do
     let!(:command) do
-      SaturnCIRunnerAPI::TestSuiteCommand.new(
+      SaturnCIWorkerAPI::TestSuiteCommand.new(
         docker_registry_cache_image_url: "registrycache.saturnci.com:5000/saturn_test_app:123456",
         number_of_concurrent_runs: "1",
         run_order_index: "1",
@@ -48,7 +48,7 @@ describe SaturnCIRunnerAPI::TestSuiteCommand do
   describe "test_filenames_string" do
     context "concurrency 2, order index 1" do
       let!(:command) do
-        SaturnCIRunnerAPI::TestSuiteCommand.new(
+        SaturnCIWorkerAPI::TestSuiteCommand.new(
           docker_registry_cache_image_url: "registrycache.saturnci.com:5000/saturn_test_app:123456",
           number_of_concurrent_runs: "2",
           run_order_index: "1",
@@ -66,7 +66,7 @@ describe SaturnCIRunnerAPI::TestSuiteCommand do
 
     context "concurrency 2, order index 2" do
       let!(:command) do
-        SaturnCIRunnerAPI::TestSuiteCommand.new(
+        SaturnCIWorkerAPI::TestSuiteCommand.new(
           docker_registry_cache_image_url: "registrycache.saturnci.com:5000/saturn_test_app:123456",
           number_of_concurrent_runs: "2",
           run_order_index: "2",
@@ -84,7 +84,7 @@ describe SaturnCIRunnerAPI::TestSuiteCommand do
 
     context "no test files" do
       let!(:command) do
-        SaturnCIRunnerAPI::TestSuiteCommand.new(
+        SaturnCIWorkerAPI::TestSuiteCommand.new(
           docker_registry_cache_image_url: "registrycache.saturnci.com:5000/saturn_test_app:123456",
           number_of_concurrent_runs: "2",
           run_order_index: "2",
@@ -114,10 +114,10 @@ describe SaturnCIRunnerAPI::TestSuiteCommand do
       it "distributes all 77 files across 4 runners without losing any" do
         test_filenames = (1..77).map { |i| "spec/test_#{i}_spec.rb" }
 
-        command1 = SaturnCIRunnerAPI::TestSuiteCommand.new(**default_params.merge(run_order_index: "1"))
-        command2 = SaturnCIRunnerAPI::TestSuiteCommand.new(**default_params.merge(run_order_index: "2"))
-        command3 = SaturnCIRunnerAPI::TestSuiteCommand.new(**default_params.merge(run_order_index: "3"))
-        command4 = SaturnCIRunnerAPI::TestSuiteCommand.new(**default_params.merge(run_order_index: "4"))
+        command1 = SaturnCIWorkerAPI::TestSuiteCommand.new(**default_params.merge(run_order_index: "1"))
+        command2 = SaturnCIWorkerAPI::TestSuiteCommand.new(**default_params.merge(run_order_index: "2"))
+        command3 = SaturnCIWorkerAPI::TestSuiteCommand.new(**default_params.merge(run_order_index: "3"))
+        command4 = SaturnCIWorkerAPI::TestSuiteCommand.new(**default_params.merge(run_order_index: "4"))
 
         files1 = command1.test_filenames_string(test_filenames).split(' ')
         files2 = command2.test_filenames_string(test_filenames).split(' ')
@@ -132,8 +132,8 @@ describe SaturnCIRunnerAPI::TestSuiteCommand do
       it "distributes all 20 files across 2 runners without losing any" do
         test_filenames = (1..20).map { |i| "spec/test_#{i}_spec.rb" }
 
-        command1 = SaturnCIRunnerAPI::TestSuiteCommand.new(**default_params.merge(number_of_concurrent_runs: "2", run_order_index: "1"))
-        command2 = SaturnCIRunnerAPI::TestSuiteCommand.new(**default_params.merge(number_of_concurrent_runs: "2", run_order_index: "2"))
+        command1 = SaturnCIWorkerAPI::TestSuiteCommand.new(**default_params.merge(number_of_concurrent_runs: "2", run_order_index: "1"))
+        command2 = SaturnCIWorkerAPI::TestSuiteCommand.new(**default_params.merge(number_of_concurrent_runs: "2", run_order_index: "2"))
 
         files1 = command1.test_filenames_string(test_filenames).split(' ')
         files2 = command2.test_filenames_string(test_filenames).split(' ')

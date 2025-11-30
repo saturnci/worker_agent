@@ -38,10 +38,10 @@ end
 def execute_script
   $stdout.sync = true
 
-  client = SaturnCIRunnerAPI::Client.new(ENV["HOST"])
+  client = SaturnCIWorkerAPI::Client.new(ENV["HOST"])
 
   puts "Starting to stream system logs"
-  system_log_stream = SaturnCIRunnerAPI::Stream.new(
+  system_log_stream = SaturnCIWorkerAPI::Stream.new(
     "/var/log/syslog",
     "runs/#{ENV["RUN_ID"]}/system_logs"
   )
@@ -71,7 +71,7 @@ def execute_script
   puts "Checking out commit #{ENV["COMMIT_HASH"]}"
   system("git checkout #{ENV["COMMIT_HASH"]}")
 
-  docker_registry_cache = SaturnCIRunnerAPI::DockerRegistryCache.new(
+  docker_registry_cache = SaturnCIWorkerAPI::DockerRegistryCache.new(
     username: ENV["DOCKER_REGISTRY_CACHE_USERNAME"],
     password: ENV["DOCKER_REGISTRY_CACHE_PASSWORD"],
     project_name: ENV["PROJECT_NAME"].downcase,
@@ -90,7 +90,7 @@ def execute_script
   puts "Project directory contents:"
   system("ls -la")
 
-  puts "Attempting to authenticate to Docker registry (#{SaturnCIRunnerAPI::DockerRegistryCache::URL})"
+  puts "Attempting to authenticate to Docker registry (#{SaturnCIWorkerAPI::DockerRegistryCache::URL})"
 
   if docker_registry_cache.authenticate
     puts "Docker registry cache authentication successful"
@@ -168,7 +168,7 @@ def execute_script
   puts "Starting to stream test output"
   File.open(RSPEC_DOCUMENTATION_OUTPUT_FILENAME, 'w') {}
 
-  SaturnCIRunnerAPI::Stream.new(
+  SaturnCIWorkerAPI::Stream.new(
     RSPEC_DOCUMENTATION_OUTPUT_FILENAME,
     "runs/#{ENV["RUN_ID"]}/test_output"
   ).start
@@ -182,7 +182,7 @@ def execute_script
     file.puts "end"
   end
 
-  test_suite_command = SaturnCIRunnerAPI::TestSuiteCommand.new(
+  test_suite_command = SaturnCIWorkerAPI::TestSuiteCommand.new(
     docker_registry_cache_image_url: docker_registry_cache.image_url,
     number_of_concurrent_runs: ENV["NUMBER_OF_CONCURRENT_RUNS"],
     run_order_index: ENV["RUN_ORDER_INDEX"],
@@ -197,7 +197,7 @@ def execute_script
   sleep(5)
 
   puts "Sending JSON output"
-  test_output_request = SaturnCIRunnerAPI::FileContentRequest.new(
+  test_output_request = SaturnCIWorkerAPI::FileContentRequest.new(
     host: ENV["HOST"],
     api_path: "runs/#{ENV["RUN_ID"]}/json_output",
     content_type: "application/json",
@@ -244,10 +244,10 @@ def send_screenshot_tar_file(source_dir:)
     return
   end
 
-  screenshot_tar_file = SaturnCIRunnerAPI::ScreenshotTarFile.new(source_dir: source_dir)
+  screenshot_tar_file = SaturnCIWorkerAPI::ScreenshotTarFile.new(source_dir: source_dir)
   puts "Screenshots tarred at: #{screenshot_tar_file.path}"
 
-  screenshot_upload_request = SaturnCIRunnerAPI::FileContentRequest.new(
+  screenshot_upload_request = SaturnCIWorkerAPI::FileContentRequest.new(
     host: ENV["HOST"],
     api_path: "runs/#{ENV["RUN_ID"]}/screenshots",
     content_type: "application/tar",
