@@ -5,12 +5,13 @@ require_relative "api_config"
 module SaturnCIWorkerAPI
   class Request
     include APIConfig
-    def initialize(host:, endpoint:, method:, body: nil, content_type: "application/json")
+    def initialize(host:, endpoint:, method:, body: nil, content_type: "application/json", headers: {})
       @host = host
       @endpoint = endpoint
       @method = method
       @body = body
       @content_type = content_type
+      @headers = headers
     end
 
     def execute
@@ -33,6 +34,7 @@ module SaturnCIWorkerAPI
 
       r.basic_auth(ENV["TEST_RUNNER_ID"], ENV["TEST_RUNNER_ACCESS_TOKEN"])
       r["Content-Type"] = @content_type
+      @headers.each { |key, value| r[key] = value }
       r.body = @body
       r
     end

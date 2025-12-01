@@ -26,4 +26,27 @@ describe SaturnCIWorkerAPI::Request do
       expect(JSON.parse(response.body)).to eq({ "id" => "123" })
     end
   end
+
+  describe "custom headers" do
+    let!(:request) do
+      SaturnCIWorkerAPI::Request.new(
+        host: host,
+        method: :post,
+        endpoint: "files",
+        body: "file content",
+        headers: { "X-Filename" => "test.json" }
+      )
+    end
+
+    before do
+      stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/files")
+        .with(headers: { "X-Filename" => "test.json" })
+        .to_return(status: 200, body: "ok")
+    end
+
+    it "includes custom headers in the request" do
+      response = request.execute
+      expect(response.body).to eq("ok")
+    end
+  end
 end
