@@ -66,7 +66,7 @@ describe WorkerAgent do
 
       it "sends an error event" do
         expect(worker_agent).to receive(:send_event).with("error")
-        worker_agent.listen_for_assignment
+        worker_agent.listen_for_assignment(interval_in_seconds: 0)
       end
     end
 
