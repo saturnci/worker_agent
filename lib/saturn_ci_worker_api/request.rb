@@ -6,10 +6,10 @@ require_relative "api_config"
 module SaturnCIWorkerAPI
   class Request
     include APIConfig
-    def initialize(host:, method:, endpoint:, body: nil)
+    def initialize(host:, endpoint:, method:, body: nil)
       @host = host
-      @method = method
       @endpoint = endpoint
+      @method = method
       @body = body
     end
 
