@@ -1,10 +1,7 @@
-require "net/http"
-require "uri"
-require_relative "api_config"
+require_relative "request"
 
 module SaturnCIWorkerAPI
   class FileContentRequest
-    include APIConfig
     def initialize(host:, api_path:, content_type:, file_path:)
       @host = host
       @api_path = api_path
@@ -13,22 +10,14 @@ module SaturnCIWorkerAPI
     end
 
     def execute
-      uri = URI(url)
-      request = Net::HTTP::Post.new(uri)
-      request["Content-Type"] = @content_type
-      request["X-Filename"] = File.basename(@file_path)
-      request.basic_auth(ENV["TEST_RUNNER_ID"], ENV["TEST_RUNNER_ACCESS_TOKEN"])
-      request.body = File.read(@file_path)
-
-      Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == "https") do |http|
-        http.request(request)
-      end
-    end
-
-    private
-
-    def url
-      "#{@host}#{API_BASE_PATH}/#{@api_path}"
+      Request.new(
+        host: @host,
+        endpoint: @api_path,
+        method: :post,
+        body: File.read(@file_path),
+        content_type: @content_type,
+        headers: { "X-Filename" => File.basename(@file_path) }
+      ).execute
     end
   end
 end
