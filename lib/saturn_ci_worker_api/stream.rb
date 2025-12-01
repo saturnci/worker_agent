@@ -1,5 +1,5 @@
 require "base64"
-require_relative "./content_request"
+require_relative "./request"
 
 module SaturnCIWorkerAPI
   WAIT_INTERVAL_IN_SECONDS = 5
@@ -42,8 +42,9 @@ module SaturnCIWorkerAPI
     end
 
     def send_content(newest_content)
-      SaturnCIWorkerAPI::ContentRequest.new(
+      SaturnCIWorkerAPI::Request.new(
         host: ENV["SATURNCI_API_HOST"],
+        method: :post,
         endpoint: @api_path,
         content_type: "text/plain",
         body: Base64.encode64(newest_content + "\n")
