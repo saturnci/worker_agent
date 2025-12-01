@@ -6,11 +6,12 @@ require_relative "api_config"
 module SaturnCIWorkerAPI
   class Request
     include APIConfig
-    def initialize(host:, endpoint:, method:, body: nil)
+    def initialize(host:, endpoint:, method:, body: nil, content_type: "application/json")
       @host = host
       @endpoint = endpoint
       @method = method
       @body = body
+      @content_type = content_type
     end
 
     def execute
@@ -32,7 +33,7 @@ module SaturnCIWorkerAPI
       end
 
       r.basic_auth(ENV["TEST_RUNNER_ID"], ENV["TEST_RUNNER_ACCESS_TOKEN"])
-      r["Content-Type"] = "application/json"
+      r["Content-Type"] = @content_type
       r.body = @body.to_json if @body
       r
     end
