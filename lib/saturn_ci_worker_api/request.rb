@@ -48,7 +48,7 @@ module SaturnCIWorkerAPI
         r = Net::HTTP::Patch.new(url)
       end
 
-      r.basic_auth(ENV["TEST_RUNNER_ID"], ENV["TEST_RUNNER_ACCESS_TOKEN"])
+      r.basic_auth(ENV["WORKER_ID"], ENV["WORKER_ACCESS_TOKEN"])
       r["Content-Type"] = @content_type
       @headers.each { |key, value| r[key] = value }
       r.body = @body

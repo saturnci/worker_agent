@@ -8,8 +8,8 @@ describe SaturnCIWorkerAPI::Request do
 
   before do
     allow(ENV).to receive(:[]).and_call_original
-    allow(ENV).to receive(:[]).with("TEST_RUNNER_ID").and_return("test_runner_id")
-    allow(ENV).to receive(:[]).with("TEST_RUNNER_ACCESS_TOKEN").and_return("test_token")
+    allow(ENV).to receive(:[]).with("WORKER_ID").and_return("test_runner_id")
+    allow(ENV).to receive(:[]).with("WORKER_ACCESS_TOKEN").and_return("test_token")
   end
 
   context "response is 5XX" do

@@ -7,8 +7,8 @@ describe SaturnCIWorkerAPI::Request do
   let!(:host) { "https://app.saturnci.com" }
 
   before do
-    allow(ENV).to receive(:[]).with("TEST_RUNNER_ID").and_return("test_runner_id")
-    allow(ENV).to receive(:[]).with("TEST_RUNNER_ACCESS_TOKEN").and_return("test_token")
+    allow(ENV).to receive(:[]).with("WORKER_ID").and_return("test_runner_id")
+    allow(ENV).to receive(:[]).with("WORKER_ACCESS_TOKEN").and_return("test_token")
   end
 
   describe "GET request" do

@@ -7,7 +7,7 @@ require_relative "../lib/current_version"
 client = SaturnCIWorkerAPI::Client.new(ENV["SATURNCI_API_HOST"])
 
 worker_agent = WorkerAgent.new(
-  test_runner_id: ENV["TEST_RUNNER_ID"],
+  test_runner_id: ENV["WORKER_ID"],
   client: client
 )
 

@@ -8,8 +8,8 @@ describe SaturnCIWorkerAPI::Client do
   let(:client) { SaturnCIWorkerAPI::Client.new(host) }
 
   before do
-    ENV["TEST_RUNNER_ID"] = "test_runner_id"
-    ENV["TEST_RUNNER_ACCESS_TOKEN"] = "test_token"
+    ENV["WORKER_ID"] = "test_runner_id"
+    ENV["WORKER_ACCESS_TOKEN"] = "test_token"
   end
 
   describe "#get" do
