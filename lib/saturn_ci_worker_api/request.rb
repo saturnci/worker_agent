@@ -5,6 +5,9 @@ require_relative "api_config"
 module SaturnCIWorkerAPI
   class Request
     include APIConfig
+    MAX_RETRY_COUNT = 5
+    RETRY_INTERVAL_IN_SECONDS = 1
+
     def initialize(host:, endpoint:, method:, body: nil, content_type: "application/json", headers: {})
       @host = host
       @endpoint = endpoint
@@ -15,9 +18,23 @@ module SaturnCIWorkerAPI
     end
 
     def execute
+      retry_count = 0
+
       http = Net::HTTP.new(url.host, url.port)
       http.use_ssl = true if url.scheme == "https"
-      http.request(request)
+
+      loop do
+        response = http.request(request)
+
+        if response.code.start_with?("5")
+          retry_count += 1
+          return response if retry_count > MAX_RETRY_COUNT
+          sleep(RETRY_INTERVAL_IN_SECONDS)
+          next
+        end
+
+        break response
+      end
     end
 
     def request
