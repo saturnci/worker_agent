@@ -13,7 +13,7 @@ describe SaturnCIWorkerAPI::Request do
 
   describe "GET request" do
     let!(:request) do
-      SaturnCIWorkerAPI::Request.new(host, :get, "test_runners/123")
+      SaturnCIWorkerAPI::Request.new(host: host, method: :get, endpoint: "test_runners/123")
     end
 
     before do
