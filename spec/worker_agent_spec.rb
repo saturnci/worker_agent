@@ -5,23 +5,23 @@ require "webmock/rspec"
 WebMock.disable_net_connect!(allow_localhost: true)
 
 describe WorkerAgent do
-  let!(:test_runner_id) { "674f498b-0669-4581-a0cf-1be4f2cf5a98" }
+  let!(:worker_id) { "674f498b-0669-4581-a0cf-1be4f2cf5a98" }
   let!(:host) { "https://app.saturnci.com" }
   let!(:client) { SaturnCIWorkerAPI::Client.new(host) }
 
   let!(:worker_agent) do
-    WorkerAgent.new(test_runner_id:, client:)
+    WorkerAgent.new(worker_id:, client:)
   end
 
   before do
     allow(ENV).to receive(:[]).and_call_original
-    allow(ENV).to receive(:[]).with("WORKER_ID").and_return(test_runner_id)
+    allow(ENV).to receive(:[]).with("WORKER_ID").and_return(worker_id)
     allow(ENV).to receive(:[]).with("WORKER_ACCESS_TOKEN").and_return("test_api_token")
   end
 
   describe "#send_ready_signal" do
     before do
-      stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{test_runner_id}/test_runner_events").
+      stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_events").
         to_return(status: 200, body: "", headers: {})
     end
 
@@ -34,10 +34,10 @@ describe WorkerAgent do
   describe "#listen_for_assignment" do
     context "an assignment exists" do
       before do
-        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{test_runner_id}/test_runner_assignments").
+        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_assignments").
           to_return(status: 200, body: [{ run_id: "abc123" }].to_json)
 
-        stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{test_runner_id}/test_runner_events")
+        stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_events")
       end
 
       it "gets the assignment" do
@@ -48,7 +48,7 @@ describe WorkerAgent do
 
     context "no assignment exists" do
       before do
-        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{test_runner_id}/test_runner_assignments").
+        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_assignments").
           to_return(status: 200, body: [].to_json)
       end
 
@@ -60,7 +60,7 @@ describe WorkerAgent do
 
     context "error response" do
       before do
-        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{test_runner_id}/test_runner_assignments").
+        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_assignments").
           to_return(status: 500, body: "Internal Server Error", headers: {})
       end
 
@@ -72,7 +72,7 @@ describe WorkerAgent do
 
     context "5 consecutive errors" do
       before do
-        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{test_runner_id}/test_runner_assignments").
+        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_assignments").
           to_return(status: 500, body: "Internal Server Error", headers: {}).times(5)
       end
 
@@ -84,11 +84,11 @@ describe WorkerAgent do
 
     context "4 consecutive errors followed by a 200" do
       before do
-        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{test_runner_id}/test_runner_assignments").
+        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_assignments").
           to_return(status: 500).times(4).then.
           to_return(status: 200, body: [{ run_id: "abc123" }].to_json)
 
-        stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{test_runner_id}/test_runner_events")
+        stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_events")
       end
 
       it "does not send an error event" do

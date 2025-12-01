@@ -1,8 +1,8 @@
 class WorkerAgent
   CONSECUTIVE_ERROR_THRESHOLD = 5
 
-  def initialize(test_runner_id:, client:)
-    @test_runner_id = test_runner_id
+  def initialize(worker_id:, client:)
+    @worker_id = worker_id
     @client = client
   end
 
@@ -16,7 +16,7 @@ class WorkerAgent
 
     loop do
       begin
-        response = @client.get("test_runners/#{@test_runner_id}/test_runner_assignments")
+        response = @client.get("test_runners/#{@worker_id}/test_runner_assignments")
 
         if response.code != "200"
           puts "Error checking for assignments: #{response.body}"
@@ -83,6 +83,6 @@ class WorkerAgent
 
   def send_event(type)
     puts "Sending event: #{type}"
-    @client.post("test_runners/#{@test_runner_id}/test_runner_events", type: type)
+    @client.post("test_runners/#{@worker_id}/test_runner_events", type: type)
   end
 end
