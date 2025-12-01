@@ -1,6 +1,5 @@
 require "net/http"
 require "uri"
-require "json"
 require_relative "api_config"
 
 module SaturnCIWorkerAPI
@@ -34,7 +33,7 @@ module SaturnCIWorkerAPI
 
       r.basic_auth(ENV["TEST_RUNNER_ID"], ENV["TEST_RUNNER_ACCESS_TOKEN"])
       r["Content-Type"] = @content_type
-      r.body = @body.to_json if @body
+      r.body = @body
       r
     end
 

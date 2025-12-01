@@ -1,3 +1,4 @@
+require "json"
 require_relative "./request"
 
 module SaturnCIWorkerAPI
@@ -11,7 +12,7 @@ module SaturnCIWorkerAPI
     end
 
     def post(endpoint, payload = nil)
-      Request.new(host: @host, method: :post, endpoint: endpoint, body: payload).execute
+      Request.new(host: @host, method: :post, endpoint: endpoint, body: payload&.to_json).execute
     end
 
     def delete(endpoint)
@@ -19,7 +20,7 @@ module SaturnCIWorkerAPI
     end
 
     def patch(endpoint, payload = nil)
-      Request.new(host: @host, method: :patch, endpoint: endpoint, body: payload).execute
+      Request.new(host: @host, method: :patch, endpoint: endpoint, body: payload&.to_json).execute
     end
 
     def debug(message)
