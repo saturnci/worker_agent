@@ -6,7 +6,6 @@ module SaturnCIWorkerAPI
   class Request
     include APIConfig
     MAX_RETRY_COUNT = 5
-    RETRY_INTERVAL_IN_SECONDS = 1
 
     def initialize(host:, endpoint:, method:, body: nil, content_type: "application/json", headers: {})
       @host = host
@@ -29,7 +28,7 @@ module SaturnCIWorkerAPI
         if response.code.start_with?("5")
           retry_count += 1
           return response if retry_count > MAX_RETRY_COUNT
-          sleep(RETRY_INTERVAL_IN_SECONDS)
+          sleep(ENV.fetch("RETRY_INTERVAL_IN_SECONDS", 1).to_i)
           next
         end
 

@@ -26,7 +26,6 @@ describe SaturnCIWorkerAPI::Request do
           method: :get,
           endpoint: "test_runners/123"
         )
-        allow(request).to receive(:sleep)
 
         response = request.execute
 
@@ -44,7 +43,6 @@ describe SaturnCIWorkerAPI::Request do
           method: :get,
           endpoint: "test_runners/123"
         )
-        allow(request).to receive(:sleep)
 
         response = request.execute
 
