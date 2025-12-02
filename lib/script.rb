@@ -20,23 +20,6 @@ DOCKER_SERVICE_NAME = 'saturn_test_app'
 RSPEC_DOCUMENTATION_OUTPUT_FILENAME = 'tmp/rspec_documentation_output.txt'
 TEST_RESULTS_FILENAME = 'tmp/test_results.txt'
 
-def wait_for_dns_resolution
-  loop do
-    # Test the same resolution path that Net::HTTP uses
-    host = ENV['SATURNCI_API_HOST'].gsub(%r{^https?://}, '')
-    http = Net::HTTP.new(host, 443)
-    http.use_ssl = true
-    http.open_timeout = 5
-    http.start {} # Just establish connection, don't make request
-    http.finish if http.started?
-    puts 'DNS resolution ready'
-    break
-  rescue StandardError => e
-    puts "Waiting for DNS resolution... (#{e.message})"
-    sleep 1
-  end
-end
-
 def execute_script
   $stdout.sync = true
 
@@ -52,7 +35,6 @@ def execute_script
 
   puts "Test runner agent version: #{`git show -s --format=%ci HEAD`.strip} #{`git rev-parse HEAD`.strip}"
   puts 'Runner ready'
-  wait_for_dns_resolution
   client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_events", type: 'runner_ready')
 
   FileUtils.rm_rf(PROJECT_DIR)
