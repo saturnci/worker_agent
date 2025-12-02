@@ -14,7 +14,7 @@ describe SaturnCIWorkerAPI::FileContentRequest do
 
   before do
     allow(ENV).to receive(:[]).and_call_original
-    allow(ENV).to receive(:[]).with('WORKER_ID').and_return('test_runner_id')
+    allow(ENV).to receive(:[]).with('WORKER_ID').and_return('worker_id')
     allow(ENV).to receive(:[]).with('WORKER_ACCESS_TOKEN').and_return('test_token')
   end
 
