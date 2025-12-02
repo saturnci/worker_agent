@@ -17,7 +17,7 @@ class WorkerAgent
     consecutive_error_count = 0
 
     loop do
-      response = @client.get("test_runners/#{@worker_id}/test_runner_assignments")
+      response = @client.get("workers/#{@worker_id}/worker_assignments")
 
       if response.code == '200'
         consecutive_error_count = 0
@@ -83,6 +83,6 @@ class WorkerAgent
 
   def send_event(type)
     puts "Sending event: #{type}"
-    @client.post("test_runners/#{@worker_id}/test_runner_events", type: type)
+    @client.post("workers/#{@worker_id}/worker_events", type: type)
   end
 end

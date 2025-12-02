@@ -23,7 +23,7 @@ describe WorkerAgent do
 
   describe '#send_ready_signal' do
     before do
-      stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_events")
+      stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/workers/#{worker_id}/worker_events")
         .to_return(status: 200, body: '', headers: {})
     end
 
@@ -36,10 +36,10 @@ describe WorkerAgent do
   describe '#listen_for_assignment' do
     context 'an assignment exists' do
       before do
-        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_assignments")
+        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/workers/#{worker_id}/worker_assignments")
           .to_return(status: 200, body: [{ run_id: 'abc123' }].to_json)
 
-        stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_events")
+        stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/workers/#{worker_id}/worker_events")
       end
 
       it 'gets the assignment' do
@@ -50,7 +50,7 @@ describe WorkerAgent do
 
     context 'no assignment exists' do
       before do
-        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_assignments")
+        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/workers/#{worker_id}/worker_assignments")
           .to_return(status: 200, body: [].to_json)
       end
 
@@ -62,7 +62,7 @@ describe WorkerAgent do
 
     context 'error response' do
       before do
-        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_assignments")
+        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/workers/#{worker_id}/worker_assignments")
           .to_return(status: 500, body: 'Internal Server Error', headers: {})
       end
 
@@ -74,7 +74,7 @@ describe WorkerAgent do
 
     context '5 consecutive errors' do
       before do
-        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_assignments")
+        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/workers/#{worker_id}/worker_assignments")
           .to_return(status: 500, body: 'Internal Server Error', headers: {}).times(5)
       end
 
@@ -86,11 +86,11 @@ describe WorkerAgent do
 
     context '4 consecutive errors followed by a 200' do
       before do
-        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_assignments")
+        stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/workers/#{worker_id}/worker_assignments")
           .to_return(status: 500).times(4).then
           .to_return(status: 200, body: [{ run_id: 'abc123' }].to_json)
 
-        stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/test_runners/#{worker_id}/test_runner_events")
+        stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/workers/#{worker_id}/worker_events")
       end
 
       it 'does not send an error event' do

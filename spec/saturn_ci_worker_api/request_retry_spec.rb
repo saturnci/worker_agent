@@ -10,14 +10,14 @@ describe SaturnCIWorkerAPI::Request do
 
   before do
     allow(ENV).to receive(:[]).and_call_original
-    allow(ENV).to receive(:[]).with('WORKER_ID').and_return('test_runner_id')
+    allow(ENV).to receive(:[]).with('WORKER_ID').and_return('worker_id')
     allow(ENV).to receive(:[]).with('WORKER_ACCESS_TOKEN').and_return('test_token')
   end
 
   context 'response is 5XX' do
     context '5XX error is fleeting' do
       it 'retries and then returns success when subsequent request succeeds' do
-        stub_request(:get, 'https://app.saturnci.com/api/v1/worker_agents/test_runners/123')
+        stub_request(:get, 'https://app.saturnci.com/api/v1/worker_agents/workers/123')
           .to_return(
             { status: 503, body: 'Service Unavailable' },
             { status: 200, body: { 'id' => '123' }.to_json }
@@ -26,7 +26,7 @@ describe SaturnCIWorkerAPI::Request do
         request = SaturnCIWorkerAPI::Request.new(
           host: host,
           method: :get,
-          endpoint: 'test_runners/123'
+          endpoint: 'workers/123'
         )
 
         response = request.execute
@@ -37,13 +37,13 @@ describe SaturnCIWorkerAPI::Request do
 
     context '5XX error is persistent' do
       it 'gives up after 5 retries and returns the 5XX response code' do
-        stub_request(:get, 'https://app.saturnci.com/api/v1/worker_agents/test_runners/123')
+        stub_request(:get, 'https://app.saturnci.com/api/v1/worker_agents/workers/123')
           .to_return(status: 503, body: 'Service Unavailable')
 
         request = SaturnCIWorkerAPI::Request.new(
           host: host,
           method: :get,
-          endpoint: 'test_runners/123'
+          endpoint: 'workers/123'
         )
 
         response = request.execute
