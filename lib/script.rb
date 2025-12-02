@@ -33,7 +33,6 @@ def execute_script
   system_log_stream.start
   sleep(5) # to give log streaming time to kick in
 
-  puts "Test runner agent version: #{`git show -s --format=%ci HEAD`.strip} #{`git rev-parse HEAD`.strip}"
   puts 'Runner ready'
   client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_events", type: 'runner_ready')
 
