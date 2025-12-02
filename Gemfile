@@ -1,6 +1,9 @@
-source "https://rubygems.org"
+# frozen_string_literal: true
 
-gem "rspec"
-gem "webmock"
-gem "pry"
-gem "base64"
+source 'https://rubygems.org'
+
+gem 'base64'
+gem 'pry'
+gem 'rspec'
+gem 'rubocop'
+gem 'webmock'

@@ -1,5 +1,7 @@
-require "base64"
-require_relative "./request"
+# frozen_string_literal: true
+
+require 'base64'
+require_relative 'request'
 
 module SaturnCIWorkerAPI
   WAIT_INTERVAL_IN_SECONDS = 5
@@ -17,11 +19,11 @@ module SaturnCIWorkerAPI
         most_recent_total_line_count = 0
         sent_content = []
 
-        while true
+        loop do
           all_lines = log_file_content
-          newest_content = all_lines[most_recent_total_line_count..-1].join("\n")
+          newest_content = all_lines[most_recent_total_line_count..].join("\n")
 
-          if newest_content.length > 0
+          if newest_content.length.positive?
             send_content(newest_content)
             sent_content << newest_content
           end
@@ -43,11 +45,11 @@ module SaturnCIWorkerAPI
 
     def send_content(newest_content)
       SaturnCIWorkerAPI::Request.new(
-        host: ENV["SATURNCI_API_HOST"],
+        host: ENV.fetch('SATURNCI_API_HOST', nil),
         method: :post,
         endpoint: @api_path,
-        content_type: "text/plain",
-        body: Base64.encode64(newest_content + "\n")
+        content_type: 'text/plain',
+        body: Base64.encode64("#{newest_content}\n")
       ).execute
     end
 

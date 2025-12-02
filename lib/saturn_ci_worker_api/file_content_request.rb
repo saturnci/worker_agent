@@ -1,4 +1,6 @@
-require_relative "request"
+# frozen_string_literal: true
+
+require_relative 'request'
 
 module SaturnCIWorkerAPI
   class FileContentRequest
@@ -16,7 +18,7 @@ module SaturnCIWorkerAPI
         method: :post,
         body: File.read(@file_path),
         content_type: @content_type,
-        headers: { "X-Filename" => File.basename(@file_path) }
+        headers: { 'X-Filename' => File.basename(@file_path) }
       ).execute
     end
   end

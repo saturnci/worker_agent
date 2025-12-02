@@ -1,31 +1,30 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
-require_relative "../lib/worker_agent"
-require_relative "../lib/saturn_ci_worker_api/client"
-require_relative "../lib/current_version"
+require_relative '../lib/worker_agent'
+require_relative '../lib/saturn_ci_worker_api/client'
+require_relative '../lib/current_version'
 
-client = SaturnCIWorkerAPI::Client.new(ENV["SATURNCI_API_HOST"])
+client = SaturnCIWorkerAPI::Client.new(ENV.fetch('SATURNCI_API_HOST', nil))
 
 worker_agent = WorkerAgent.new(
-  worker_id: ENV["WORKER_ID"],
+  worker_id: ENV.fetch('WORKER_ID', nil),
   client: client
 )
 
 worker_agent.send_ready_signal
-puts "Ready signal sent"
+puts 'Ready signal sent'
 
-puts "Listening for assignments..."
+puts 'Listening for assignments...'
 assignment = worker_agent.listen_for_assignment
 
-if assignment.nil?
-  raise "Assignment is blank"
-end
+raise 'Assignment is blank' if assignment.nil?
 
-puts "Received assignment for run #{assignment["run_id"]}"
+puts "Received assignment for run #{assignment['run_id']}"
 
 puts "Current agent version: #{current_version}"
-puts "Performing git pull to ensure latest agent version present..."
-system("git pull")
+puts 'Performing git pull to ensure latest agent version present...'
+system('git pull')
 puts "Current agent version: #{current_version}"
 
 worker_agent.execute(assignment)

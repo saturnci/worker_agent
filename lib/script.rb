@@ -1,120 +1,120 @@
-require "net/http"
-require "uri"
-require "json"
-require "fileutils"
+# frozen_string_literal: true
 
-require_relative "./saturn_ci_worker_api/client"
-require_relative "./saturn_ci_worker_api/stream"
-require_relative "./dry_run"
-require_relative "./saturn_ci_worker_api/file_content_request"
-require_relative "./saturn_ci_worker_api/docker_registry_cache"
-require_relative "./saturn_ci_worker_api/test_suite_command"
-require_relative "./saturn_ci_worker_api/screenshot_tar_file"
+require 'English'
 
-PROJECT_DIR = "/project"
-DOCKER_SERVICE_NAME = "saturn_test_app"
-RSPEC_DOCUMENTATION_OUTPUT_FILENAME = "tmp/rspec_documentation_output.txt"
-TEST_RESULTS_FILENAME = "tmp/test_results.txt"
+require 'net/http'
+require 'uri'
+require 'json'
+require 'fileutils'
+
+require_relative 'saturn_ci_worker_api/client'
+require_relative 'saturn_ci_worker_api/stream'
+require_relative 'dry_run'
+require_relative 'saturn_ci_worker_api/file_content_request'
+require_relative 'saturn_ci_worker_api/docker_registry_cache'
+require_relative 'saturn_ci_worker_api/test_suite_command'
+require_relative 'saturn_ci_worker_api/screenshot_tar_file'
+
+PROJECT_DIR = '/project'
+DOCKER_SERVICE_NAME = 'saturn_test_app'
+RSPEC_DOCUMENTATION_OUTPUT_FILENAME = 'tmp/rspec_documentation_output.txt'
+TEST_RESULTS_FILENAME = 'tmp/test_results.txt'
 
 def wait_for_dns_resolution
   loop do
-    begin
-      # Test the same resolution path that Net::HTTP uses
-      host = ENV["SATURNCI_API_HOST"].gsub(/^https?:\/\//, '')
-      http = Net::HTTP.new(host, 443)
-      http.use_ssl = true
-      http.open_timeout = 5
-      http.start { }  # Just establish connection, don't make request
-      http.finish if http.started?
-      puts "DNS resolution ready"
-      break
-    rescue => e
-      puts "Waiting for DNS resolution... (#{e.message})"
-      sleep 1
-    end
+    # Test the same resolution path that Net::HTTP uses
+    host = ENV['SATURNCI_API_HOST'].gsub(%r{^https?://}, '')
+    http = Net::HTTP.new(host, 443)
+    http.use_ssl = true
+    http.open_timeout = 5
+    http.start {} # Just establish connection, don't make request
+    http.finish if http.started?
+    puts 'DNS resolution ready'
+    break
+  rescue StandardError => e
+    puts "Waiting for DNS resolution... (#{e.message})"
+    sleep 1
   end
 end
 
 def execute_script
   $stdout.sync = true
 
-  client = SaturnCIWorkerAPI::Client.new(ENV["SATURNCI_API_HOST"])
+  client = SaturnCIWorkerAPI::Client.new(ENV.fetch('SATURNCI_API_HOST', nil))
 
-  puts "Starting to stream system logs"
+  puts 'Starting to stream system logs'
   system_log_stream = SaturnCIWorkerAPI::Stream.new(
-    "/var/log/syslog",
-    "runs/#{ENV["RUN_ID"]}/system_logs"
+    '/var/log/syslog',
+    "runs/#{ENV.fetch('RUN_ID', nil)}/system_logs"
   )
   system_log_stream.start
   sleep(5) # to give log streaming time to kick in
 
   puts "Test runner agent version: #{`git show -s --format=%ci HEAD`.strip} #{`git rev-parse HEAD`.strip}"
-  puts "Runner ready"
+  puts 'Runner ready'
   wait_for_dns_resolution
-  client.post("runs/#{ENV["RUN_ID"]}/run_events", type: "runner_ready")
+  client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_events", type: 'runner_ready')
 
-  FileUtils.rm_rf(PROJECT_DIR) if Dir.exist?(PROJECT_DIR)
+  FileUtils.rm_rf(PROJECT_DIR)
 
-  github_token = client.post("github_tokens", github_installation_id: ENV["GITHUB_INSTALLATION_ID"]).body
+  github_token = client.post('github_tokens', github_installation_id: ENV.fetch('GITHUB_INSTALLATION_ID', nil)).body
   clone_repo(
     github_token: github_token,
-    source: ENV["GITHUB_REPO_FULL_NAME"],
+    source: ENV.fetch('GITHUB_REPO_FULL_NAME', nil),
     destination: PROJECT_DIR
   )
 
   FileUtils.mkdir_p(PROJECT_DIR)
   Dir.chdir(PROJECT_DIR)
-  FileUtils.mkdir_p("tmp")
+  FileUtils.mkdir_p('tmp')
 
-  client.post("runs/#{ENV["RUN_ID"]}/run_events", type: "repository_cloned")
+  client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_events", type: 'repository_cloned')
 
-  puts "Checking out commit #{ENV["COMMIT_HASH"]}"
-  system("git checkout #{ENV["COMMIT_HASH"]}")
+  puts "Checking out commit #{ENV.fetch('COMMIT_HASH', nil)}"
+  system("git checkout #{ENV.fetch('COMMIT_HASH', nil)}")
 
   docker_registry_cache = SaturnCIWorkerAPI::DockerRegistryCache.new(
-    username: ENV["DOCKER_REGISTRY_CACHE_USERNAME"],
-    password: ENV["DOCKER_REGISTRY_CACHE_PASSWORD"],
-    project_name: ENV["PROJECT_NAME"].downcase,
-    branch_name: ENV["BRANCH_NAME"].downcase
+    username: ENV.fetch('DOCKER_REGISTRY_CACHE_USERNAME', nil),
+    password: ENV.fetch('DOCKER_REGISTRY_CACHE_PASSWORD', nil),
+    project_name: ENV['PROJECT_NAME'].downcase,
+    branch_name: ENV['BRANCH_NAME'].downcase
   )
 
   puts "Registry cache image URL: #{docker_registry_cache.image_url}"
-  saturnci_env_file_path = File.join(PROJECT_DIR, ".saturnci/.env")
-  FileUtils.mv(ENV["SOURCE_ENV_FILE_PATH"], saturnci_env_file_path)
+  saturnci_env_file_path = File.join(PROJECT_DIR, '.saturnci/.env')
+  FileUtils.mv(ENV.fetch('SOURCE_ENV_FILE_PATH', nil), saturnci_env_file_path)
   system("echo 'export SATURN_TEST_APP_IMAGE_URL=#{docker_registry_cache.image_url}' >> #{saturnci_env_file_path}")
   system("export $(cat #{saturnci_env_file_path} | xargs)")
 
-  puts "Environment variables set in this shell:"
+  puts 'Environment variables set in this shell:'
   system("env | awk -F= '{print $1}' | sort")
 
-  puts "Project directory contents:"
-  system("ls -la")
+  puts 'Project directory contents:'
+  system('ls -la')
 
   puts "Attempting to authenticate to Docker registry (#{SaturnCIWorkerAPI::DockerRegistryCache::URL})"
 
-  if docker_registry_cache.authenticate
-    puts "Docker registry cache authentication successful"
-  else
-    raise "Docker registry cache authentication failed"
-  end
+  raise 'Docker registry cache authentication failed' unless docker_registry_cache.authenticate
 
-  puts "Copying database.yml"
-  system("sudo cp .saturnci/database.yml config/database.yml")
+  puts 'Docker registry cache authentication successful'
+
+  puts 'Copying database.yml'
+  system('sudo cp .saturnci/database.yml config/database.yml')
 
   build_args = []
-  build_args << "--build-arg ARCH=#{ENV["ARCH"]}" if ENV["ARCH"]
-  build_args << "--build-arg NODE_ARCH=#{ENV["NODE_ARCH"]}" if ENV["NODE_ARCH"]
-  build_args << "--build-arg BUNDLE_GEMFILE=#{ENV["BUNDLE_GEMFILE"]}" if ENV["BUNDLE_GEMFILE"]
-  build_args << "--build-arg BUNDLE_GEMS__CONTRIBSYS__COM=#{ENV["BUNDLE_GEMS__CONTRIBSYS__COM"]}" if ENV["BUNDLE_GEMS__CONTRIBSYS__COM"]
-  build_args << "--build-arg BUNDLE_GITHUB__COM=#{ENV["BUNDLE_GITHUB__COM"]}" if ENV["BUNDLE_GITHUB__COM"]
+  build_args << "--build-arg ARCH=#{ENV['ARCH']}" if ENV['ARCH']
+  build_args << "--build-arg NODE_ARCH=#{ENV['NODE_ARCH']}" if ENV['NODE_ARCH']
+  build_args << "--build-arg BUNDLE_GEMFILE=#{ENV['BUNDLE_GEMFILE']}" if ENV['BUNDLE_GEMFILE']
+  build_args << "--build-arg BUNDLE_GEMS__CONTRIBSYS__COM=#{ENV['BUNDLE_GEMS__CONTRIBSYS__COM']}" if ENV['BUNDLE_GEMS__CONTRIBSYS__COM']
+  build_args << "--build-arg BUNDLE_GITHUB__COM=#{ENV['BUNDLE_GITHUB__COM']}" if ENV['BUNDLE_GITHUB__COM']
   build_args << "--build-arg GITHUB_TOKEN=#{github_token}"
 
-  system("docker buildx create --name saturnci-builder --driver docker-container --use")
+  system('docker buildx create --name saturnci-builder --driver docker-container --use')
 
   build_command = "docker buildx build \
     --push \
     -t #{docker_registry_cache.image_url}:latest \
-    #{build_args.join(" ")} \
+    #{build_args.join(' ')} \
     --cache-from type=registry,ref=#{docker_registry_cache.image_url}:cache \
     --cache-to type=registry,ref=#{docker_registry_cache.image_url}:cache,mode=max \
     --progress=plain \
@@ -122,71 +122,67 @@ def execute_script
 
   puts "Build command: #{build_command}"
   build_command_result = system(build_command)
-  if build_command_result
-    puts "Build command completed successfully"
-  else
-    raise "Build command failed"
-  end
+  raise 'Build command failed' unless build_command_result
 
-  puts "Running pre.sh"
-  client.post("runs/#{ENV["RUN_ID"]}/run_events", type: "pre_script_started")
-  system("sudo chmod 755 .saturnci/pre.sh")
+  puts 'Build command completed successfully'
 
-  puts "Environment variables set in this shell:"
+  puts 'Running pre.sh'
+  client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_events", type: 'pre_script_started')
+  system('sudo chmod 755 .saturnci/pre.sh')
+
+  puts 'Environment variables set in this shell:'
   system("env | awk -F= '{print $1}' | sort")
 
   pre_script_command = "docker compose -f .saturnci/docker-compose.yml run #{DOCKER_SERVICE_NAME} ./.saturnci/pre.sh"
   puts "pre.sh command: \"#{pre_script_command}\""
   system(pre_script_command)
-  puts "pre.sh exit code: #{$?.exitstatus}"
+  puts "pre.sh exit code: #{$CHILD_STATUS.exitstatus}"
 
-  if $?.exitstatus == 0
-    client.post("runs/#{ENV["RUN_ID"]}/run_events", type: "pre_script_finished")
+  if $CHILD_STATUS.exitstatus.zero?
+    client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_events", type: 'pre_script_finished')
   else
     exit 1
   end
 
-  puts "Checking for spec files in repository..."
-  spec_files = Dir.glob("./spec/**/*_spec.rb")
+  puts 'Checking for spec files in repository...'
+  spec_files = Dir.glob('./spec/**/*_spec.rb')
   puts "Found #{spec_files.length} spec files:"
   spec_files.each { |f| puts "  #{f}" }
 
-  puts "Getting expected test count with RSpec dry-run"
+  puts 'Getting expected test count with RSpec dry-run'
   dry_run = DryRun.new(docker_service_name: DOCKER_SERVICE_NAME)
   puts "Running dry run command: #{dry_run.command}"
   puts "Expected test count: #{dry_run.expected_count}"
 
-  endpoint = "test_suite_runs/#{ENV["TEST_SUITE_RUN_ID"]}"
+  endpoint = "test_suite_runs/#{ENV.fetch('TEST_SUITE_RUN_ID', nil)}"
   puts "Sending dry run example count to API (#{endpoint})"
   response = client.patch(endpoint, { dry_run_example_count: dry_run.expected_count })
   puts "Dry run example count response code: #{response.code}"
 
-  unless response.code[0] == "2"
-    raise "Failed to send dry run example count to API. Response code: #{response.code}, Body: #{response.body}"
-  end
+  raise "Failed to send dry run example count to API. Response code: #{response.code}, Body: #{response.body}" unless response.code[0] == '2'
 
-  puts "Starting to stream test output"
+  puts 'Starting to stream test output'
   File.open(RSPEC_DOCUMENTATION_OUTPUT_FILENAME, 'w') {}
 
   SaturnCIWorkerAPI::Stream.new(
     RSPEC_DOCUMENTATION_OUTPUT_FILENAME,
-    "runs/#{ENV["RUN_ID"]}/test_output"
+    "runs/#{ENV.fetch('RUN_ID', nil)}/test_output"
   ).start
 
-  puts "Running tests"
-  client.post("runs/#{ENV["RUN_ID"]}/run_events", type: "test_suite_started")
+  puts 'Running tests'
+  client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_events", type: 'test_suite_started')
 
   File.open('./example_status_persistence.rb', 'w') do |file|
-    file.puts "RSpec.configure do |config|"
+    file.puts 'RSpec.configure do |config|'
     file.puts "  config.example_status_persistence_file_path = '#{TEST_RESULTS_FILENAME}'"
-    file.puts "end"
+    file.puts 'end'
   end
 
   test_suite_command = SaturnCIWorkerAPI::TestSuiteCommand.new(
     docker_registry_cache_image_url: docker_registry_cache.image_url,
-    number_of_concurrent_runs: ENV["NUMBER_OF_CONCURRENT_RUNS"],
-    run_order_index: ENV["RUN_ORDER_INDEX"],
-    rspec_seed: ENV["RSPEC_SEED"],
+    number_of_concurrent_runs: ENV.fetch('NUMBER_OF_CONCURRENT_RUNS', nil),
+    run_order_index: ENV.fetch('RUN_ORDER_INDEX', nil),
+    rspec_seed: ENV.fetch('RSPEC_SEED', nil),
     rspec_documentation_output_filename: RSPEC_DOCUMENTATION_OUTPUT_FILENAME,
     docker_service_name: DOCKER_SERVICE_NAME
   ).to_s
@@ -196,46 +192,45 @@ def execute_script
   Process.wait(test_suite_pid)
   sleep(5)
 
-  puts "Sending JSON output"
+  puts 'Sending JSON output'
   test_output_request = SaturnCIWorkerAPI::FileContentRequest.new(
-    host: ENV["SATURNCI_API_HOST"],
-    api_path: "runs/#{ENV["RUN_ID"]}/json_output",
-    content_type: "application/json",
-    file_path: "tmp/json_output.json"
+    host: ENV.fetch('SATURNCI_API_HOST', nil),
+    api_path: "runs/#{ENV.fetch('RUN_ID', nil)}/json_output",
+    content_type: 'application/json',
+    file_path: 'tmp/json_output.json'
   )
   response = test_output_request.execute
   puts "JSON output response code: #{response.code}"
   puts response.body
   puts
 
-  send_screenshot_tar_file(source_dir: "tmp/capybara")
-
+  send_screenshot_tar_file(source_dir: 'tmp/capybara')
 rescue StandardError => e
   puts "Error: #{e.message}"
   puts e.backtrace
 ensure
-  puts "Run finished"
-  response = client.post("runs/#{ENV["RUN_ID"]}/run_finished_events")
+  puts 'Run finished'
+  response = client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_finished_events")
   puts "Run finished response code: #{response.code}"
   puts response.body
   puts
 
-  puts "Deleting runner"
-  puts "Done"
+  puts 'Deleting runner'
+  puts 'Done'
   sleep(5)
   system_log_stream.kill
-  client.delete("runs/#{ENV["RUN_ID"]}/runner")
+  client.delete("runs/#{ENV.fetch('RUN_ID', nil)}/runner")
 end
 
 def clone_repo(github_token:, source:, destination:)
-  require "open3"
+  require 'open3'
   puts "Cloning #{source} into #{destination}..."
-  puts "GitHub installation ID: #{ENV["GITHUB_INSTALLATION_ID"]}"
+  puts "GitHub installation ID: #{ENV.fetch('GITHUB_INSTALLATION_ID', nil)}"
   puts "GitHub token: #{github_token}"
   clone_command = "git clone --recurse-submodules https://x-access-token:#{github_token}@github.com/#{source} #{destination}"
   puts clone_command
   _, stderr, status = Open3.capture3(clone_command)
-  puts status.success? ? "clone successful" : "clone failed: #{stderr}"
+  puts status.success? ? 'clone successful' : "clone failed: #{stderr}"
 end
 
 def send_screenshot_tar_file(source_dir:)
@@ -248,9 +243,9 @@ def send_screenshot_tar_file(source_dir:)
   puts "Screenshots tarred at: #{screenshot_tar_file.path}"
 
   screenshot_upload_request = SaturnCIWorkerAPI::FileContentRequest.new(
-    host: ENV["SATURNCI_API_HOST"],
-    api_path: "runs/#{ENV["RUN_ID"]}/screenshots",
-    content_type: "application/tar",
+    host: ENV.fetch('SATURNCI_API_HOST', nil),
+    api_path: "runs/#{ENV.fetch('RUN_ID', nil)}/screenshots",
+    content_type: 'application/tar',
     file_path: screenshot_tar_file.path
   )
 

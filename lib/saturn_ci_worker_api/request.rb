@@ -1,13 +1,16 @@
-require "net/http"
-require "uri"
-require_relative "api_config"
+# frozen_string_literal: true
+
+require 'net/http'
+require 'uri'
+require_relative 'api_config'
 
 module SaturnCIWorkerAPI
   class Request
     include APIConfig
+
     MAX_RETRY_COUNT = 5
 
-    def initialize(host:, endpoint:, method:, body: nil, content_type: "application/json", headers: {})
+    def initialize(host:, endpoint:, method:, body: nil, content_type: 'application/json', headers: {})
       @host = host
       @endpoint = endpoint
       @method = method
@@ -20,15 +23,16 @@ module SaturnCIWorkerAPI
       retry_count = 0
 
       http = Net::HTTP.new(url.host, url.port)
-      http.use_ssl = true if url.scheme == "https"
+      http.use_ssl = true if url.scheme == 'https'
 
       loop do
         response = http.request(request)
 
-        if response.code.start_with?("5")
+        if response.code.start_with?('5')
           retry_count += 1
           return response if retry_count > MAX_RETRY_COUNT
-          sleep(ENV.fetch("RETRY_INTERVAL_IN_SECONDS", 1).to_i)
+
+          sleep(ENV.fetch('RETRY_INTERVAL_IN_SECONDS', 1).to_i)
           next
         end
 
@@ -48,8 +52,8 @@ module SaturnCIWorkerAPI
         r = Net::HTTP::Patch.new(url)
       end
 
-      r.basic_auth(ENV["WORKER_ID"], ENV["WORKER_ACCESS_TOKEN"])
-      r["Content-Type"] = @content_type
+      r.basic_auth(ENV.fetch('WORKER_ID', nil), ENV.fetch('WORKER_ACCESS_TOKEN', nil))
+      r['Content-Type'] = @content_type
       @headers.each { |key, value| r[key] = value }
       r.body = @body
       r

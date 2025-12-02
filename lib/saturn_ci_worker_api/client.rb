@@ -1,5 +1,7 @@
-require "json"
-require_relative "./request"
+# frozen_string_literal: true
+
+require 'json'
+require_relative 'request'
 
 module SaturnCIWorkerAPI
   class Client
@@ -24,7 +26,7 @@ module SaturnCIWorkerAPI
     end
 
     def debug(message)
-      post("debug_messages", message)
+      post('debug_messages', message)
     end
   end
 end

@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+require 'English'
 class DryRun
   def initialize(docker_service_name:)
     @docker_service_name = docker_service_name
@@ -8,19 +11,15 @@ class DryRun
   end
 
   def expected_count
-    puts "Full dry run output:"
+    puts 'Full dry run output:'
     puts full_output
     puts "Dry run exit code: #{@exit_code}"
 
-    if @exit_code != 0
-      raise "RSpec dry-run failed with exit code #{@exit_code}"
-    end
+    raise "RSpec dry-run failed with exit code #{@exit_code}" if @exit_code != 0
 
     line_with_count = full_output.split("\n").find { |line| line.match(/(\d+) example/) }
 
-    if line_with_count.nil?
-      raise "Could not find example count in RSpec dry-run output"
-    end
+    raise 'Could not find example count in RSpec dry-run output' if line_with_count.nil?
 
     line_with_count.match(/(\d+) example/)[1].to_i
   end
@@ -34,6 +33,6 @@ class DryRun
   end
 
   def last_exit_code
-    $?.exitstatus
+    $CHILD_STATUS.exitstatus
   end
 end

@@ -1,10 +1,14 @@
-class SaturnCIWorkerAPI::ScreenshotTarFile
-  def initialize(source_dir:)
-    @source_dir = source_dir
-    system("tar -czf #{path} -C #{@source_dir} .")
-  end
+# frozen_string_literal: true
 
-  def path
-    "#{@source_dir}/screenshots.tar.gz"
+module SaturnCIWorkerAPI
+  class ScreenshotTarFile
+    def initialize(source_dir:)
+      @source_dir = source_dir
+      system("tar -czf #{path} -C #{@source_dir} .")
+    end
+
+    def path
+      "#{@source_dir}/screenshots.tar.gz"
+    end
   end
 end

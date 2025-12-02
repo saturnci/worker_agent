@@ -1,52 +1,54 @@
-require_relative "../../lib/saturn_ci_worker_api/request"
+# frozen_string_literal: true
 
-require "webmock/rspec"
+require_relative '../../lib/saturn_ci_worker_api/request'
+
+require 'webmock/rspec'
 WebMock.disable_net_connect!(allow_localhost: true)
 
 describe SaturnCIWorkerAPI::Request do
-  let!(:host) { "https://app.saturnci.com" }
+  let!(:host) { 'https://app.saturnci.com' }
 
   before do
-    allow(ENV).to receive(:[]).with("WORKER_ID").and_return("test_runner_id")
-    allow(ENV).to receive(:[]).with("WORKER_ACCESS_TOKEN").and_return("test_token")
+    allow(ENV).to receive(:[]).with('WORKER_ID').and_return('test_runner_id')
+    allow(ENV).to receive(:[]).with('WORKER_ACCESS_TOKEN').and_return('test_token')
   end
 
-  describe "GET request" do
+  describe 'GET request' do
     let!(:request) do
-      SaturnCIWorkerAPI::Request.new(host: host, method: :get, endpoint: "test_runners/123")
+      SaturnCIWorkerAPI::Request.new(host: host, method: :get, endpoint: 'test_runners/123')
     end
 
     before do
-      stub_request(:get, "https://app.saturnci.com/api/v1/worker_agents/test_runners/123")
-        .to_return(status: 200, body: { "id" => "123" }.to_json)
+      stub_request(:get, 'https://app.saturnci.com/api/v1/worker_agents/test_runners/123')
+        .to_return(status: 200, body: { 'id' => '123' }.to_json)
     end
 
-    it "parses the response body as JSON" do
+    it 'parses the response body as JSON' do
       response = request.execute
-      expect(JSON.parse(response.body)).to eq({ "id" => "123" })
+      expect(JSON.parse(response.body)).to eq({ 'id' => '123' })
     end
   end
 
-  describe "custom headers" do
+  describe 'custom headers' do
     let!(:request) do
       SaturnCIWorkerAPI::Request.new(
         host: host,
         method: :post,
-        endpoint: "files",
-        body: "file content",
-        headers: { "X-Filename" => "test.json" }
+        endpoint: 'files',
+        body: 'file content',
+        headers: { 'X-Filename' => 'test.json' }
       )
     end
 
     before do
-      stub_request(:post, "https://app.saturnci.com/api/v1/worker_agents/files")
-        .with(headers: { "X-Filename" => "test.json" })
-        .to_return(status: 200, body: "ok")
+      stub_request(:post, 'https://app.saturnci.com/api/v1/worker_agents/files')
+        .with(headers: { 'X-Filename' => 'test.json' })
+        .to_return(status: 200, body: 'ok')
     end
 
-    it "includes custom headers in the request" do
+    it 'includes custom headers in the request' do
       response = request.execute
-      expect(response.body).to eq("ok")
+      expect(response.body).to eq('ok')
     end
   end
 end
