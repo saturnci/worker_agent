@@ -186,6 +186,7 @@ def execute_script
   puts
 
   send_screenshot_tar_file(source_dir: 'tmp/capybara')
+  send_test_failure_screenshots(source_dir: 'tmp/capybara')
 rescue StandardError => e
   puts "Error: #{e.message}"
   puts e.backtrace
@@ -233,4 +234,25 @@ def send_screenshot_tar_file(source_dir:)
   response = screenshot_upload_request.execute
   puts "Screenshot tar response code: #{response.code}"
   puts response.body
+end
+
+def send_test_failure_screenshots(source_dir:)
+  unless Dir.exist?(source_dir)
+    puts "No test failure screenshots found in #{source_dir}"
+    return
+  end
+
+  Dir.glob(File.join(source_dir, '*.png')).each do |png_path|
+    puts "Sending test failure screenshot: #{png_path}"
+
+    request = SaturnCIWorkerAPI::FileContentRequest.new(
+      host: ENV.fetch('SATURNCI_API_HOST', nil),
+      api_path: "runs/#{ENV.fetch('RUN_ID', nil)}/test_failure_screenshots",
+      content_type: 'image/png',
+      file_path: png_path
+    )
+
+    response = request.execute
+    puts "Test failure screenshot response code: #{response.code}"
+  end
 end
