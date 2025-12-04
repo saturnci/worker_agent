@@ -13,7 +13,6 @@ require_relative 'dry_run'
 require_relative 'saturn_ci_worker_api/file_content_request'
 require_relative 'saturn_ci_worker_api/docker_registry_cache'
 require_relative 'saturn_ci_worker_api/test_suite_command'
-require_relative 'saturn_ci_worker_api/screenshot_tar_file'
 
 PROJECT_DIR = '/project'
 DOCKER_SERVICE_NAME = 'saturn_test_app'
@@ -185,7 +184,6 @@ def execute_script
   puts response.body
   puts
 
-  send_screenshot_tar_file(source_dir: 'tmp/capybara')
   send_test_failure_screenshots(source_dir: 'tmp/capybara')
 rescue StandardError => e
   puts "Error: #{e.message}"
@@ -213,27 +211,6 @@ def clone_repo(github_token:, source:, destination:)
   puts clone_command
   _, stderr, status = Open3.capture3(clone_command)
   puts status.success? ? 'clone successful' : "clone failed: #{stderr}"
-end
-
-def send_screenshot_tar_file(source_dir:)
-  unless Dir.exist?(source_dir)
-    puts "No screenshots found in #{source_dir}"
-    return
-  end
-
-  screenshot_tar_file = SaturnCIWorkerAPI::ScreenshotTarFile.new(source_dir: source_dir)
-  puts "Screenshots tarred at: #{screenshot_tar_file.path}"
-
-  screenshot_upload_request = SaturnCIWorkerAPI::FileContentRequest.new(
-    host: ENV.fetch('SATURNCI_API_HOST', nil),
-    api_path: "runs/#{ENV.fetch('RUN_ID', nil)}/screenshots",
-    content_type: 'application/tar',
-    file_path: screenshot_tar_file.path
-  )
-
-  response = screenshot_upload_request.execute
-  puts "Screenshot tar response code: #{response.code}"
-  puts response.body
 end
 
 def send_test_failure_screenshots(source_dir:)
