@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# K8s entry point - receives assignment via env vars instead of polling
+
+require_relative "../lib/saturn_ci_worker_api/client"
+require_relative "../lib/script"
+
+client = SaturnCIWorkerAPI::Client.new(ENV.fetch("SATURNCI_API_HOST"))
+worker_id = ENV.fetch("WORKER_ID")
+
+# Send assignment acknowledged event
+puts "Sending assignment_acknowledged event..."
+client.post("workers/#{worker_id}/worker_events", type: "assignment_acknowledged")
+
+# Write custom env vars to file (if provided as JSON)
+if ENV["CUSTOM_ENV_VARS"]
+  require "json"
+  custom_vars = JSON.parse(ENV["CUSTOM_ENV_VARS"])
+  ENV["SOURCE_ENV_FILE_PATH"] = "/tmp/.env"
+  File.open(ENV["SOURCE_ENV_FILE_PATH"], "w") do |file|
+    custom_vars.each do |key, value|
+      ENV[key] = value
+      file.puts "#{key}=#{value}"
+    end
+  end
+end
+
+# All other assignment data comes directly from env vars:
+# - TEST_SUITE_RUN_ID
+# - RUN_ID
+# - RUN_ORDER_INDEX
+# - PROJECT_NAME
+# - BRANCH_NAME
+# - NUMBER_OF_CONCURRENT_RUNS
+# - COMMIT_HASH
+# - RSPEC_SEED
+# - GITHUB_INSTALLATION_ID
+# - GITHUB_REPO_FULL_NAME
+
+puts "Starting test execution for run #{ENV['RUN_ID']}..."
+execute_script
