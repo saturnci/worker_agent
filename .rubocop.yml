@@ -2,6 +2,9 @@ AllCops:
   TargetRubyVersion: 3.4
   NewCops: enable
   SuggestExtensions: false
+  Exclude:
+    - Dockerfile
+    - '*.sh'
 
 Style/Documentation:
   Enabled: false

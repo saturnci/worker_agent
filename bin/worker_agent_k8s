@@ -3,22 +3,22 @@
 
 # K8s entry point - receives assignment via env vars instead of polling
 
-require_relative "../lib/saturn_ci_worker_api/client"
-require_relative "../lib/script"
+require_relative '../lib/saturn_ci_worker_api/client'
+require_relative '../lib/script'
 
-client = SaturnCIWorkerAPI::Client.new(ENV.fetch("SATURNCI_API_HOST"))
-worker_id = ENV.fetch("WORKER_ID")
+client = SaturnCIWorkerAPI::Client.new(ENV.fetch('SATURNCI_API_HOST'))
+worker_id = ENV.fetch('WORKER_ID')
 
 # Send assignment acknowledged event
-puts "Sending assignment_acknowledged event..."
-client.post("workers/#{worker_id}/worker_events", type: "assignment_acknowledged")
+puts 'Sending assignment_acknowledged event...'
+client.post("workers/#{worker_id}/worker_events", type: 'assignment_acknowledged')
 
 # Write custom env vars to file (if provided as JSON)
-if ENV["CUSTOM_ENV_VARS"]
-  require "json"
-  custom_vars = JSON.parse(ENV["CUSTOM_ENV_VARS"])
-  ENV["SOURCE_ENV_FILE_PATH"] = "/tmp/.env"
-  File.open(ENV["SOURCE_ENV_FILE_PATH"], "w") do |file|
+if ENV.fetch('CUSTOM_ENV_VARS', nil)
+  require 'json'
+  custom_vars = JSON.parse(ENV.fetch('CUSTOM_ENV_VARS'))
+  ENV['SOURCE_ENV_FILE_PATH'] = '/tmp/.env'
+  File.open(ENV.fetch('SOURCE_ENV_FILE_PATH'), 'w') do |file|
     custom_vars.each do |key, value|
       ENV[key] = value
       file.puts "#{key}=#{value}"
@@ -38,5 +38,5 @@ end
 # - GITHUB_INSTALLATION_ID
 # - GITHUB_REPO_FULL_NAME
 
-puts "Starting test execution for run #{ENV['RUN_ID']}..."
+puts "Starting test execution for run #{ENV.fetch('RUN_ID', nil)}..."
 execute_script

@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
-gem "base64"
-gem "json"
+gem 'base64'
+gem 'json'
 
 group :development, :test do
-  gem "pry"
-  gem "rspec"
-  gem "rubocop"
-  gem "webmock"
+  gem 'pry'
+  gem 'rspec'
+  gem 'rubocop'
+  gem 'webmock'
 end

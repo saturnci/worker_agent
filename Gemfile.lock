@@ -71,6 +71,7 @@ PLATFORMS
 
 DEPENDENCIES
   base64
+  json
   pry
   rspec
   rubocop
