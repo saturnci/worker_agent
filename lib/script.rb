@@ -27,13 +27,13 @@ def execute_script
   puts 'Starting to stream system logs'
   system_log_stream = SaturnCIWorkerAPI::Stream.new(
     '/var/log/syslog',
-    "runs/#{ENV.fetch('RUN_ID', nil)}/system_logs"
+    "tasks/#{ENV.fetch('TASK_ID', nil)}/system_logs"
   )
   system_log_stream.start
   sleep(5) # to give log streaming time to kick in
 
   puts 'Runner ready'
-  client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_events", type: 'runner_ready')
+  client.post("tasks/#{ENV.fetch('TASK_ID', nil)}/task_events", type: 'runner_ready')
 
   FileUtils.rm_rf(PROJECT_DIR)
 
@@ -48,7 +48,7 @@ def execute_script
   Dir.chdir(PROJECT_DIR)
   FileUtils.mkdir_p('tmp')
 
-  client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_events", type: 'repository_cloned')
+  client.post("tasks/#{ENV.fetch('TASK_ID', nil)}/task_events", type: 'repository_cloned')
 
   puts "Checking out commit #{ENV.fetch('COMMIT_HASH', nil)}"
   system("git checkout #{ENV.fetch('COMMIT_HASH', nil)}")
@@ -107,7 +107,7 @@ def execute_script
   puts 'Build command completed successfully'
 
   puts 'Running pre.sh'
-  client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_events", type: 'pre_script_started')
+  client.post("tasks/#{ENV.fetch('TASK_ID', nil)}/task_events", type: 'pre_script_started')
   system('sudo chmod 755 .saturnci/pre.sh')
 
   puts 'Environment variables set in this shell:'
@@ -119,7 +119,7 @@ def execute_script
   puts "pre.sh exit code: #{$CHILD_STATUS.exitstatus}"
 
   if $CHILD_STATUS.exitstatus.zero?
-    client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_events", type: 'pre_script_finished')
+    client.post("tasks/#{ENV.fetch('TASK_ID', nil)}/task_events", type: 'pre_script_finished')
   else
     exit 1
   end
@@ -146,11 +146,11 @@ def execute_script
 
   SaturnCIWorkerAPI::Stream.new(
     RSPEC_DOCUMENTATION_OUTPUT_FILENAME,
-    "runs/#{ENV.fetch('RUN_ID', nil)}/test_output"
+    "tasks/#{ENV.fetch('TASK_ID', nil)}/test_output"
   ).start
 
   puts 'Running tests'
-  client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_events", type: 'test_suite_started')
+  client.post("tasks/#{ENV.fetch('TASK_ID', nil)}/task_events", type: 'test_suite_started')
 
   File.open('./example_status_persistence.rb', 'w') do |file|
     file.puts 'RSpec.configure do |config|'
@@ -175,7 +175,7 @@ def execute_script
   puts 'Sending JSON output'
   test_output_request = SaturnCIWorkerAPI::FileContentRequest.new(
     host: ENV.fetch('SATURNCI_API_HOST', nil),
-    api_path: "runs/#{ENV.fetch('RUN_ID', nil)}/json_output",
+    api_path: "tasks/#{ENV.fetch('TASK_ID', nil)}/json_output",
     content_type: 'application/json',
     file_path: 'tmp/json_output.json'
   )
@@ -190,7 +190,7 @@ rescue StandardError => e
   puts e.backtrace
 ensure
   puts 'Run finished'
-  response = client.post("runs/#{ENV.fetch('RUN_ID', nil)}/run_finished_events")
+  response = client.post("tasks/#{ENV.fetch('TASK_ID', nil)}/task_finished_events")
   puts "Run finished response code: #{response.code}"
   puts response.body
   puts
@@ -199,7 +199,7 @@ ensure
   puts 'Done'
   sleep(5)
   system_log_stream.kill
-  client.delete("runs/#{ENV.fetch('RUN_ID', nil)}/runner")
+  client.delete("tasks/#{ENV.fetch('TASK_ID', nil)}/runner")
 end
 
 def clone_repo(github_token:, source:, destination:)
@@ -224,7 +224,7 @@ def send_test_failure_screenshots(source_dir:)
 
     request = SaturnCIWorkerAPI::FileContentRequest.new(
       host: ENV.fetch('SATURNCI_API_HOST', nil),
-      api_path: "runs/#{ENV.fetch('RUN_ID', nil)}/test_failure_screenshots",
+      api_path: "tasks/#{ENV.fetch('TASK_ID', nil)}/test_failure_screenshots",
       content_type: 'image/png',
       file_path: png_path
     )
